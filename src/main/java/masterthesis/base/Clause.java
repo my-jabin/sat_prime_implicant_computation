@@ -8,19 +8,19 @@ public class Clause {
 
     private ArrayList<Literal> literals;
 
+    //if the clause contains one pi literal, then its state is PRIME
+    public enum STATE {PRIME, DEFAULT};
+
+    private STATE state;
+
     public Clause() {
         this.literals = new ArrayList<>();
+        state = STATE.DEFAULT;
     }
 
     public void addLiteral(final Literal l){
         this.literals.add(l);
     }
-
-    // if found, return index, else return -1;
-    public int getNextSatLiteralIndex(Model model){
-        return -1;
-    }
-
 
     public ArrayList<Literal> getLiterals() {
         return literals;
@@ -42,13 +42,21 @@ public class Clause {
         return this.literals.contains(l);
     }
 
+    public STATE getState() {
+        return state;
+    }
+
+    public void setState(STATE state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         this.literals.forEach( l ->{
             sb.append(l).append(" ");
         });
-        sb.deleteCharAt(sb.lastIndexOf(" "));
+        sb.append(this.state);
         return sb.toString();
     }
 }

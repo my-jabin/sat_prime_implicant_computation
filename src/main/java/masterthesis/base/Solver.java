@@ -1,12 +1,10 @@
 package masterthesis.base;
+
 import masterthesis.primebywatches.Watcher;
 import masterthesis.utils.Debug;
 import masterthesis.utils.DimacsFormatReader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Solver {
@@ -26,22 +24,21 @@ public class Solver {
         reset();
     }
 
-    public void reset(){
+    public void reset() {
         this.watchedList = new HashMap<>();
-        this.primeImplicant = new Implicant(ac);
+        this.primeImplicant = new Implicant();
         this.model = null;
-        this.watchedList = new HashMap<>();
     }
 
     public void setEngine(SolverEngine engine) {
-        if(this.engine == engine) {
+        if (this.engine == engine) {
             return;
         }
         this.engine = engine;
         reset();
     }
 
-    private void initWatchesAndSubset() throws CloneNotSupportedException {
+    private void initWatchesAndSubset(final Implicant primeImplicant) throws CloneNotSupportedException {
         if (model.isEmpty()) {
             System.out.println("Model doesn't exist, watched List cannot be initialized");
             return;
@@ -49,7 +46,7 @@ public class Solver {
         clauseSet.getClauses().stream().forEach(c -> {
             final Watcher watcher = new Watcher(c);
             //watcher.initWatchedIndex(primeImplicant, this, ac);
-            watcher.initWatchedIndex(primeImplicant, watchedList, ac);
+            watcher.initWatchedIndex(primeImplicant, watchedList);
         });
 
         // foreach l in PI do
@@ -64,10 +61,10 @@ public class Solver {
 
         // prime Unit propagation
         Debug.println(false, "First of all, add unit literals to PI", primeImplicant);
-        primeUnitPropagation();
+        primeUnitPropagation(primeImplicant);
     }
 
-    private void primeUnitPropagation() throws CloneNotSupportedException {
+    private void primeUnitPropagation(final Implicant primeImplicant) throws CloneNotSupportedException {
         Implicant uppi = (Implicant) primeImplicant.clone();
         do {
             uppi.getLiterals().forEach(l -> watchedList.getOrDefault(l, new ArrayList<>()).clear());
@@ -76,12 +73,12 @@ public class Solver {
             uppi.clear();
             tempPI.getLiterals().forEach(l -> {
                 //this.ac.unwatchAndPropagate(l.getComplementary(this.ac),clauseSet,uppi,model,this);
-                this.unwatchAndPropagate(l.getComplementary(), uppi,model);
+                this.unwatchAndPropagate(l.getComplementary(), uppi, model);
             });
         } while (!uppi.isEmpty());
     }
 
-    private void primeByWatches() throws CloneNotSupportedException {
+    private void primeByWatches(final Implicant primeImplicant) throws CloneNotSupportedException {
         Debug.println(false, primeImplicant);
         if (model.isEmpty()) {
             System.err.println("Model does't exist, Please check your formula");
@@ -92,9 +89,8 @@ public class Solver {
                 .forEach(l -> {
                     Debug.println(false, l);
                     //remove -l from watched list in all clauses
-                    unwatchAndPropagate(l.getComplementary(), primeImplicant,model);
+                    unwatchAndPropagate(l.getComplementary(), primeImplicant, model);
                 });
-        // after first
         Debug.println(false, watchedList);
         Debug.println(false, "After first UWAP", primeImplicant);
 
@@ -107,7 +103,7 @@ public class Solver {
             Literal pickup = o.orElse(null);
             if (pickup == null) break;
             m.removeLiteral(pickup); // remove the pickup literal from model
-            unwatchAndPropagate(pickup, primeImplicant,m);
+            unwatchAndPropagate(pickup, primeImplicant, m);
         }
 
         Debug.println(false, watchedList);
@@ -124,14 +120,18 @@ public class Solver {
                         // add the other literal into Pi;
                         final Literal other = w.getOtherWatchedLiteral(l);
                         pi.addLiteral(other);
+                        // state of the clause that contains other literal must set to be PRIME
+                        clauseSet.getClauses().stream()
+                                .filter(clause -> clause.getState() != Clause.STATE.PRIME)
+                                .filter(clause -> clause.contains(other))
+                                .forEach(clause -> clause.setState(Clause.STATE.PRIME));
+
                         watchedList.get(other).remove(w);
                         watchedList.get(other).forEach(watcher -> watcher.setStatus(Watcher.Status.SUCCESS));
                     } else {
                         // move watched index down
                         w.moveWatchedIndex(l, satisfied);
                         watchedList.computeIfAbsent(satisfied, k -> new ArrayList<>()).add(w);
-                       // watchedList.get(satisfied).add(w);
-                        // wl.get(l).remove(w);
                     }
                 });
         // after unwatching, all watchers of literal l should be clean
@@ -144,23 +144,209 @@ public class Solver {
     }
 
     public Implicant getPrimeImplicant() throws CloneNotSupportedException {
+        // TODO: field variable model should converted to be a local variable
+        watchedList.clear();
         if (primeImplicant.isEmpty()) {
-            initWatchesAndSubset();
-            primeByWatches();
+            initWatchesAndSubset(primeImplicant);
+            primeByWatches(primeImplicant);
         }
         return this.primeImplicant;
     }
 
 
+    /**
+     * compute all prime implicants under the default model.
+     *
+     * @return
+     */
+    public List<Implicant> getAllPrimeImplicants() throws CloneNotSupportedException {
+        return getAllPrimeImplicants(getModel());
+    }
+
+    /**
+     * Compute all prime implicants under the specified model.
+     * <p>
+     * Step 1: initialize watched literals and subset of prime implicant
+     * Step 2: Perform UnwatchAndPropagate(), now watched literals in the NOT SUCCESS watcher are all
+     * satisfied literal.
+     * Step 3: reform the clause set so that each clause in the clause set contains only satisfied literal.
+     * Step 4: Build trees with the reformed clause set. Each literal in the reformed clause set is a root for a tree.
+     * Step 5: Deep First Search each tree, generate the subsets of prime implicant
+     * @param model
+     * @return
+     */
+    public List<Implicant> getAllPrimeImplicants(Model model) throws CloneNotSupportedException {
+        // todo: think about how to deal with the vairable model.
+        if (model == null || model.isEmpty()) return null;
+        this.model = model;
+        watchedList.clear();
+        Implicant baseImplicant = new Implicant();
+
+        // step 1:
+        initWatchesAndSubset(baseImplicant);
+        // step 2:
+        model.getLiterals().stream()
+                .filter(l -> !baseImplicant.contains(l))
+                .collect(Collectors.toList())
+                .forEach(l -> {
+                    Debug.println(false, l);
+                    //remove -l from watched list in all clauses
+                    unwatchAndPropagate(l.getComplementary(), baseImplicant, model);
+                });
+
+        // Step 3:
+        ClauseSet reformedCS = reformClauseSet(this.clauseSet, baseImplicant);
+        Debug.println(true,reformedCS.size());
+
+        // Step 4
+        LinkedHashMap<Literal, Integer> weight = weighting(reformedCS);
+
+        ArrayList<Node> trees = new ArrayList<>();
+        for (Map.Entry<Literal, Integer> entry : weight.entrySet()) {
+            Literal l = ac.getLiteral(entry.getKey());
+            // root is the entry point of a tree
+            Node root = new Node(l);
+            buildTree(reformedCS, root, l);
+            trees.add(root);
+        }
+
+        // Step 5: Deep First Search the tree, generate the subset of prime implicant
+        Debug.println(true,"Trees size = "+trees.size());
+        Debug.println(true,"Weights size = "+weight.size());
+        return null;
+    }
+
+    /**
+     * Reform the clause set so that the returned clause set contains NON-PRIME clause,
+     * and each clause contains only NON-pi literals.
+     * @param clauseSet The original clause set to be reformed
+     * @param baseImplicant The subset of prime implicant
+     * @return Reformed ClauseSet
+     */
+    private ClauseSet reformClauseSet(ClauseSet clauseSet, Implicant baseImplicant) {
+        ClauseSet reformed = new ClauseSet();
+        Debug.println(true, watchedList);
+        Debug.println(true, baseImplicant);
+        clauseSet.getClauses().stream()
+                .filter(clause -> clause.getState() != Clause.STATE.PRIME)
+                .forEach(clause -> {
+                    Clause c = new Clause();
+                    clause.getLiterals().stream()
+                            .filter(l -> !baseImplicant.contains(l))
+                            .forEach(c::addLiteral);
+                    reformed.addClause(c);
+                });
+        return reformed;
+    }
+
     public Model getModel() {
-        if(this.model == null){
-            this.model = ModelFactory.getModel(this.engine,ac);
+        if (this.model == null) {
+            this.model = ModelFactory.getModel(this.engine, ac);
         }
         return this.model;
     }
 
     public ClauseSet getClauseSet() {
         return this.clauseSet;
+    }
+
+    /**
+     * Weighting a clause set in order descending. The heaviest one is the first entry.
+     *
+     * @param cs Clause set
+     * @return LinkedHashMap
+     */
+    public LinkedHashMap<Literal, Integer> weighting(ClauseSet cs) {
+        HashMap<Literal, Integer> weightMap = weight(cs);
+        if (weightMap == null) return null;
+
+        List<Map.Entry<Literal, Integer>> sortedList = weightMap.entrySet().stream()
+                .sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue()))
+                .collect(Collectors.toList());
+
+        LinkedHashMap<Literal, Integer> result = new LinkedHashMap<>();
+
+        for (Map.Entry<Literal, Integer> entry : sortedList) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
+
+    /**
+     * Weighting a clause set. Each literal has a weight represents the occurrence in the clause set.
+     *
+     * @param cs Clause set
+     * @return HashMap
+     */
+    private HashMap<Literal, Integer> weight(ClauseSet cs) {
+        if (cs == null) return null;
+        HashMap<Literal, Integer> weightMap = new HashMap<>();
+        cs.getClauses().forEach(clause -> {
+            clause.getLiterals().forEach(literal -> {
+                if (weightMap.containsKey(literal)) {
+                    weightMap.put(literal, weightMap.get(literal) + 1);
+                } else {
+                    weightMap.put(literal, 1);
+                }
+            });
+        });
+        return weightMap;
+    }
+
+    private List<Literal> getHighestWeightLiterals(ClauseSet cs) {
+        HashMap<Literal, Integer> weightMap = weight(cs);
+        if (weightMap == null) return null;
+
+        List<Map.Entry<Literal, Integer>> sortedList = weightMap.entrySet().stream()
+                .sorted((o1, o2) -> o2.getValue().compareTo(o1.getValue()))
+                .collect(Collectors.toList());
+
+        int maxWeight = sortedList.get(0).getValue();
+
+        List<Literal> result = new ArrayList<>();
+
+        for (Map.Entry<Literal, Integer> entry : sortedList) {
+            if (entry.getValue() == maxWeight) {
+                result.add(entry.getKey());
+            } else {
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Create a (sub)tree with the parent node.
+     * The process of building the tree is:
+     * Clause set removes the clause that contains literal l.
+     * Calculate again the weight of each literal,
+     * then add the literals with highest weight to the child of parent node.
+     * Repetitively build (sub)tree base on the child node.
+     * <p>
+     * We could access the whole tree by access the parent node
+     *
+     * @param cs     Clause set
+     * @param parent Parent node is the root of this (sub)tree
+     * @param l      Literal, the value of the parent
+     */
+    public void buildTree(ClauseSet cs, Node parent, Literal l) {
+        ClauseSet reducedCS = new ClauseSet();
+        for (Clause clause : cs.getClauses()) {
+            if (!clause.contains(l))
+                reducedCS.addClause(clause);
+        }
+        if (reducedCS.isEmpty()) {
+            return;
+        }
+        List<Literal> highestWeightLiterals = getHighestWeightLiterals(reducedCS);
+        if (highestWeightLiterals == null)
+            return;
+        for (Literal li : highestWeightLiterals) {
+            Node child = new Node(li);
+            parent.addChild(child);
+            buildTree(reducedCS, child, li);
+        }
     }
 
 }

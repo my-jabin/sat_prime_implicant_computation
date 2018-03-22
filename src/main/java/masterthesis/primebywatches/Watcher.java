@@ -32,7 +32,7 @@ public class Watcher {
 //        }
 //    }
 
-    public void initWatchedIndex(final Implicant primeImplicant, final Map<Literal, ArrayList<Watcher>> watchedList, final ApplicationContext ac) {
+    public void initWatchedIndex(final Implicant primeImplicant, final Map<Literal, ArrayList<Watcher>> watchedList) {
         if (clause.isEmpyt()) return;
 
         if (clause.size() > 1) {
@@ -43,6 +43,7 @@ public class Watcher {
         } else {
             watchedIndex1 = 0;
             primeImplicant.addLiteral(clause.get(0));
+            clause.setState(Clause.STATE.PRIME);
         }
     }
 
@@ -85,4 +86,9 @@ public class Watcher {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public Clause getClause() {
+        return clause;
+    }
+
 }

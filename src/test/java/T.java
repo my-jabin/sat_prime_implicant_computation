@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -280,102 +280,104 @@ public class T {
         }
 
     }
-//
-//    @Test
-//    public void testBuildTree(){
-//        final String fileNameTest = SATPATH + "formula08.cnf";
-//        final ApplicationContext ac = new ApplicationContext();
-//        new DimacsFormatReader(fileNameTest).readCNF(ac);
-//        //new DimacsFormatReader(fileName).readCNF(ac);
-//
-//        final ClauseSet clauseSet = new ClauseSet(ac);
-//        LinkedHashMap<Literal, Integer> weight = Main.weight(clauseSet);
-//
-//        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(1)));
-//        Assert.assertEquals(3, (long)weight.get(ac.getLiteral(2)));
-//        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(3)));
-//        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(4)));
-//        Assert.assertEquals(3, (long)weight.get(ac.getLiteral(5)));
-//        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(6)));
-//
-//        ArrayList<Node> trees = new ArrayList<>();
-//
-//        Iterator iterator = weight.entrySet().iterator();
-//        while (iterator.hasNext()) {
-//            Map.Entry<Literal, Integer> entry = (Map.Entry<Literal, Integer>) iterator.next();
-//            Literal l = ac.getLiteral(entry.getKey());
-//            // root is the entry point of a tree
-//            Node<Literal> root = new Node<>(l);
-//            Main.recursion(ac, clauseSet, l,root);
-//            trees.add(root);
-//        }
-//
-//        Assert.assertEquals(6, trees.size());
-//
-//        Node root2 =  trees.get(0);
-//        Assert.assertEquals( ac.getLiteral(2), root2.getData());
-//        Assert.assertEquals(1,root2.childrenSize());
-//        Assert.assertEquals( ac.getLiteral(5),((Node)root2.getChildren().get(0)).getData());
-//
-//        Node root5 =  trees.get(1);
-//        Assert.assertEquals( ac.getLiteral(5), root5.getData());
-//        Assert.assertEquals(1,root5.childrenSize());
-//        Assert.assertEquals( ac.getLiteral(2),((Node)root5.getChildren().get(0)).getData());
-//
-//        Node root1 =  trees.get(2);
-//        Assert.assertEquals( ac.getLiteral(1), root1.getData());
-//        Assert.assertEquals(5,root1.childrenSize());
-//
-//        Assert.assertEquals( ac.getLiteral(2),((Node)root1.getChildren().get(0)).getData());
-//        Assert.assertEquals( ac.getLiteral(3),((Node)root1.getChildren().get(1)).getData());
-//        Assert.assertEquals( ac.getLiteral(4),((Node)root1.getChildren().get(2)).getData());
-//        Assert.assertEquals( ac.getLiteral(5),((Node)root1.getChildren().get(3)).getData());
-//        Assert.assertEquals( ac.getLiteral(6),((Node)root1.getChildren().get(4)).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(3),((Node)(((Node)root1.getChildren().get(0)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root1.getChildren().get(0)).getChildren().get(1))).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root1.getChildren().get(1)).getChildren().get(0))).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(6),((Node)(((Node)root1.getChildren().get(2)).getChildren().get(0))).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root1.getChildren().get(3)).getChildren().get(0))).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(4),((Node)(((Node)root1.getChildren().get(4)).getChildren().get(0))).getData());
-//
-//
-//        Node root3 =  trees.get(3);
-//        Assert.assertEquals( ac.getLiteral(3), root3.getData());
-//        Assert.assertEquals(1,root3.childrenSize());
-//        Assert.assertEquals( ac.getLiteral(2),((Node)root3.getChildren().get(0)).getData());
-//
-//        Node root4 =  trees.get(4);
-//        Assert.assertEquals( ac.getLiteral(4), root4.getData());
-//        Assert.assertEquals(4,root4.childrenSize());
-//        Assert.assertEquals( ac.getLiteral(1),((Node)root4.getChildren().get(0)).getData());
-//        Assert.assertEquals( ac.getLiteral(2),((Node)root4.getChildren().get(1)).getData());
-//        Assert.assertEquals( ac.getLiteral(5),((Node)root4.getChildren().get(2)).getData());
-//        Assert.assertEquals( ac.getLiteral(6),((Node)root4.getChildren().get(3)).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(6),((Node)(((Node)root4.getChildren().get(0)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root4.getChildren().get(1)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root4.getChildren().get(2)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(1),((Node)(((Node)root4.getChildren().get(3)).getChildren().get(0))).getData());
-//
-//
-//        Node root6 =  trees.get(5);
-//        Assert.assertEquals( ac.getLiteral(6), root6.getData());
-//        Assert.assertEquals(4,root6.childrenSize());
-//        Assert.assertEquals( ac.getLiteral(1),((Node)root6.getChildren().get(0)).getData());
-//        Assert.assertEquals( ac.getLiteral(2),((Node)root6.getChildren().get(1)).getData());
-//        Assert.assertEquals( ac.getLiteral(4),((Node)root6.getChildren().get(2)).getData());
-//        Assert.assertEquals( ac.getLiteral(5),((Node)root6.getChildren().get(3)).getData());
-//
-//        Assert.assertEquals(ac.getLiteral(4),((Node)(((Node)root6.getChildren().get(0)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root6.getChildren().get(1)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(1),((Node)(((Node)root6.getChildren().get(2)).getChildren().get(0))).getData());
-//        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root6.getChildren().get(3)).getChildren().get(0))).getData());
-//    }
+
+    @Test
+    public void testBuildTree(){
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula08.cnf";
+        Solver solver = new Solver(fileNameTest);
+        LinkedHashMap<Literal, Integer> weight = solver.weighting(solver.getClauseSet());
+        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(1)));
+        Assert.assertEquals(3, (long)weight.get(ac.getLiteral(2)));
+        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(3)));
+        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(4)));
+        Assert.assertEquals(3, (long)weight.get(ac.getLiteral(5)));
+        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(6)));
+
+        ArrayList<Node> trees = new ArrayList<>();
+
+        for (Map.Entry<Literal, Integer> entry : weight.entrySet()) {
+            Literal l = ac.getLiteral(entry.getKey());
+            // root is the entry point of a tree
+            Node root = new Node(l);
+            solver.buildTree(solver.getClauseSet(), root, l);
+            trees.add(root);
+        }
+
+        Assert.assertEquals(6, trees.size());
+
+        Node root2 =  trees.get(0);
+        Assert.assertEquals( ac.getLiteral(2), root2.getValue());
+        Assert.assertEquals(1,root2.childrenSize());
+        Assert.assertEquals( ac.getLiteral(5),((Node)root2.getChildren().get(0)).getValue());
+
+        Node root5 =  trees.get(1);
+        Assert.assertEquals( ac.getLiteral(5), root5.getValue());
+        Assert.assertEquals(1,root5.childrenSize());
+        Assert.assertEquals( ac.getLiteral(2),((Node)root5.getChildren().get(0)).getValue());
+
+        Node root1 =  trees.get(2);
+        Assert.assertEquals( ac.getLiteral(1), root1.getValue());
+        Assert.assertEquals(5,root1.childrenSize());
+
+        Assert.assertEquals( ac.getLiteral(2),((Node)root1.getChildren().get(0)).getValue());
+        Assert.assertEquals( ac.getLiteral(3),((Node)root1.getChildren().get(1)).getValue());
+        Assert.assertEquals( ac.getLiteral(4),((Node)root1.getChildren().get(2)).getValue());
+        Assert.assertEquals( ac.getLiteral(5),((Node)root1.getChildren().get(3)).getValue());
+        Assert.assertEquals( ac.getLiteral(6),((Node)root1.getChildren().get(4)).getValue());
+
+        Assert.assertEquals(ac.getLiteral(3),((Node)(((Node)root1.getChildren().get(0)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root1.getChildren().get(0)).getChildren().get(1))).getValue());
+
+        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root1.getChildren().get(1)).getChildren().get(0))).getValue());
+
+        Assert.assertEquals(ac.getLiteral(6),((Node)(((Node)root1.getChildren().get(2)).getChildren().get(0))).getValue());
+
+        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root1.getChildren().get(3)).getChildren().get(0))).getValue());
+
+        Assert.assertEquals(ac.getLiteral(4),((Node)(((Node)root1.getChildren().get(4)).getChildren().get(0))).getValue());
+
+
+        Node root3 =  trees.get(3);
+        Assert.assertEquals( ac.getLiteral(3), root3.getValue());
+        Assert.assertEquals(1,root3.childrenSize());
+        Assert.assertEquals( ac.getLiteral(2),((Node)root3.getChildren().get(0)).getValue());
+
+        Node root4 =  trees.get(4);
+        Assert.assertEquals( ac.getLiteral(4), root4.getValue());
+        Assert.assertEquals(4,root4.childrenSize());
+        Assert.assertEquals( ac.getLiteral(1),((Node)root4.getChildren().get(0)).getValue());
+        Assert.assertEquals( ac.getLiteral(2),((Node)root4.getChildren().get(1)).getValue());
+        Assert.assertEquals( ac.getLiteral(5),((Node)root4.getChildren().get(2)).getValue());
+        Assert.assertEquals( ac.getLiteral(6),((Node)root4.getChildren().get(3)).getValue());
+
+        Assert.assertEquals(ac.getLiteral(6),((Node)(((Node)root4.getChildren().get(0)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root4.getChildren().get(1)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root4.getChildren().get(2)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(1),((Node)(((Node)root4.getChildren().get(3)).getChildren().get(0))).getValue());
+
+
+        Node root6 =  trees.get(5);
+        Assert.assertEquals( ac.getLiteral(6), root6.getValue());
+        Assert.assertEquals(4,root6.childrenSize());
+        Assert.assertEquals( ac.getLiteral(1),((Node)root6.getChildren().get(0)).getValue());
+        Assert.assertEquals( ac.getLiteral(2),((Node)root6.getChildren().get(1)).getValue());
+        Assert.assertEquals( ac.getLiteral(4),((Node)root6.getChildren().get(2)).getValue());
+        Assert.assertEquals( ac.getLiteral(5),((Node)root6.getChildren().get(3)).getValue());
+
+        Assert.assertEquals(ac.getLiteral(4),((Node)(((Node)root6.getChildren().get(0)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root6.getChildren().get(1)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(1),((Node)(((Node)root6.getChildren().get(2)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root6.getChildren().get(3)).getChildren().get(0))).getValue());
+    }
+
+    @Test
+    public void testAllPrimeImplicants() throws CloneNotSupportedException {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula06.cnf";
+        Solver solver = new Solver(fileNameTest);
+        solver.getAllPrimeImplicants();
+    }
 
 
     /**

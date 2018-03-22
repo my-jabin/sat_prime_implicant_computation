@@ -9,10 +9,8 @@ import java.util.stream.Collectors;
 public class Implicant implements Cloneable{
 
     private ArrayList<Literal> literals;
-    private final ApplicationContext ac;
 
-    public Implicant(ApplicationContext ac) {
-        this.ac = ac;
+    public Implicant() {
         this.literals =  new ArrayList<>();
     }
 

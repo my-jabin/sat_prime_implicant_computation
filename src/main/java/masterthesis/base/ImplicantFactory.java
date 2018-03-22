@@ -15,7 +15,7 @@ public class ImplicantFactory {
 
     public static Implicant getPrimeImplicant(ApplicationContext ac){
         ISolver solver  = SolverFactory.newDefault();
-        Implicant implicant = new Implicant(ac) ;
+        Implicant implicant = new Implicant() ;
         solver.reset();
         solver.newVar(MAXVAR);
         try {

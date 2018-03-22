@@ -61,6 +61,10 @@ public class ClauseSet{
         return clauses;
     }
 
+    public int size(){
+        return this.clauses.size();
+    }
+
     public Clause get(int index){
         return this.clauses.get(index);
     }

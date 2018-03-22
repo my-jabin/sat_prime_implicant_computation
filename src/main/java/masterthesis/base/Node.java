@@ -3,25 +3,25 @@ package masterthesis.base;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node<T> {
+public class Node {
 
-    private List<Node<T>> children = new ArrayList<>();
+    private List<Node> children = new ArrayList<>();
 
-    private Node<T> parent = null;
+    private Node parent = null;
 
-    private T data = null;
+    private Literal value = null;
 
-    public Node(T data) {
-        this.data = data;
+    public Node(Literal value) {
+        this.value = value;
     }
 
-    public void addChild(Node<T> node) {
+    public void addChild(Node node) {
         node.parent = this;
         children.add(node);
     }
 
-    public void addChild(T data) {
-        Node<T> child = new Node<T>(data);
+    public void addChild(Literal data) {
+        Node child = new Node(data);
         addChild(child);
     }
 
@@ -29,16 +29,16 @@ public class Node<T> {
         return children.size();
     }
 
-    public List<Node<T>> getChildren() {
+    public List<Node> getChildren() {
         return children;
     }
 
-    public T getData() {
-        return data;
+    public Literal getValue() {
+        return value;
     }
 
     @Override
     public String toString() {
-        return "Node{" + data + " }";
+        return "Node{" + value + " }";
     }
 }
