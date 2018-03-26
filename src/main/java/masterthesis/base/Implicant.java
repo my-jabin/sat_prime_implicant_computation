@@ -31,7 +31,19 @@ public class Implicant implements Cloneable{
     }
 
     public void addLiterals(List<Literal> list){
-        list.forEach( l ->  this.addLiteral(l) );
+        list.forEach(l -> {
+            if(!this.literals.contains(l))
+                this.literals.add(l);
+        });
+    }
+
+    /**
+     * Inserts a collection of literals, starting at the specified position.
+     * @param index
+     * @param list
+     */
+    public void addLiterals(int index, List<Literal> list){
+        this.literals.addAll(index,list);
     }
 
     public Literal get(int index){
@@ -58,6 +70,23 @@ public class Implicant implements Cloneable{
         Implicant i = (Implicant) super.clone();
         i.literals = (ArrayList<Literal>) literals.clone();
         return i;
+    }
+
+    /**
+     * If the instance is a subset of implicant i, then it returns true, otherwise false.
+     * If the instance contains no literal, returns also false.
+     * For example, {-8} is a subset of {-8.-10}
+     * @param i
+     * @return
+     */
+    public boolean isSubset(Implicant i){
+        if(this.isEmpty() || this.size() > i.size()) return false;
+        for(Literal l: this.literals){
+            if(!i.contains(l)){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

@@ -374,9 +374,11 @@ public class T {
     @Test
     public void testAllPrimeImplicants() throws CloneNotSupportedException {
         this.ac.reset();
-        final String fileNameTest = SATPATH + "formula06.cnf";
+        final String fileNameTest = SATPATH + "formula05.cnf";
         Solver solver = new Solver(fileNameTest);
-        solver.getAllPrimeImplicants();
+        List<Implicant> allImplicants = solver.getAllPrimeImplicants();
+        Debug.println(true,allImplicants);
+        Assert.assertEquals(3,allImplicants.size());
     }
 
 

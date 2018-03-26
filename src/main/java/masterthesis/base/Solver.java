@@ -5,6 +5,7 @@ import masterthesis.utils.Debug;
 import masterthesis.utils.DimacsFormatReader;
 
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Solver {
@@ -172,6 +173,7 @@ public class Solver {
      * Step 3: reform the clause set so that each clause in the clause set contains only satisfied literal.
      * Step 4: Build trees with the reformed clause set. Each literal in the reformed clause set is a root for a tree.
      * Step 5: Deep First Search each tree, generate the subsets of prime implicant
+     *
      * @param model
      * @return
      */
@@ -184,6 +186,7 @@ public class Solver {
 
         // step 1:
         initWatchesAndSubset(baseImplicant);
+        Debug.println(true,baseImplicant);
         // step 2:
         model.getLiterals().stream()
                 .filter(l -> !baseImplicant.contains(l))
@@ -195,8 +198,8 @@ public class Solver {
                 });
 
         // Step 3:
-        ClauseSet reformedCS = reformClauseSet(this.clauseSet, baseImplicant);
-        Debug.println(true,reformedCS.size());
+        ClauseSet reformedCS = reformClauseSet(this.clauseSet, model);
+        Debug.println(true, reformedCS.size());
 
         // Step 4
         LinkedHashMap<Literal, Integer> weight = weighting(reformedCS);
@@ -210,29 +213,66 @@ public class Solver {
             trees.add(root);
         }
 
-        // Step 5: Deep First Search the tree, generate the subset of prime implicant
-        Debug.println(true,"Trees size = "+trees.size());
-        Debug.println(true,"Weights size = "+weight.size());
-        return null;
+        // Step 5: Deeply search the tree, generate the subset of prime implicant
+        Debug.println(true, "Trees size = " + trees.size());
+        Debug.println(true, "Weights size = " + weight.size());
+
+        // each implicant is an subset of a prime implicant
+        //List<Implicant> subsets = new ArrayList<>();
+        List<Implicant> subsets = Collections.synchronizedList(new ArrayList<Implicant>());
+        Implicant tempImplicant = new Implicant();
+        for (Node root : trees) {
+            // do something with root node(root, subset, tImplicant)
+            dfs(root,subsets,tempImplicant);
+        }
+        //Debug.println(true,subsets);
+
+        // Step 6: combine the base implicant with the subset to generate all prime implicants
+        subsets.forEach(s->s.addLiterals(0,baseImplicant.getLiterals()));
+
+
+        return subsets;
     }
+
+    private void dfs(Node node, List<Implicant> subsets, Implicant tImplicants) throws CloneNotSupportedException {
+        List<Node> children = node.getChildren();
+        if (children != null && children.size() != 0) {
+            tImplicants.addLiteral(node.getValue());
+            for(Node child : children){
+                dfs(child, subsets, tImplicants);
+            }
+            tImplicants.removeLiteral(node.getValue());
+        } else {
+            Implicant i = (Implicant) tImplicants.clone();
+            i.addLiteral(node.getValue());
+            for(Implicant implicant: subsets){
+                if(implicant.isSubset(i)){
+                    return;
+                }
+            }
+            subsets.add(i);//if any implicant in subset is a subset of i, then i is not minimal.
+        }
+    }
+
 
     /**
      * Reform the clause set so that the returned clause set contains NON-PRIME clause,
-     * and each clause contains only NON-pi literals.
-     * @param clauseSet The original clause set to be reformed
-     * @param baseImplicant The subset of prime implicant
+     * and each clause contains only satisfied literals.
+     *
+     * @param clauseSet     The original clause set to be reformed
+     * @param model The model of the original clause set
      * @return Reformed ClauseSet
      */
-    private ClauseSet reformClauseSet(ClauseSet clauseSet, Implicant baseImplicant) {
+    private ClauseSet reformClauseSet(ClauseSet clauseSet, Model model) {
         ClauseSet reformed = new ClauseSet();
-        Debug.println(true, watchedList);
-        Debug.println(true, baseImplicant);
+        Debug.println(false, watchedList);
+        //Debug.println(true, baseImplicant);
         clauseSet.getClauses().stream()
                 .filter(clause -> clause.getState() != Clause.STATE.PRIME)
                 .forEach(clause -> {
                     Clause c = new Clause();
                     clause.getLiterals().stream()
-                            .filter(l -> !baseImplicant.contains(l))
+                            .filter(l -> model.contains(l))
                             .forEach(c::addLiteral);
                     reformed.addClause(c);
                 });
