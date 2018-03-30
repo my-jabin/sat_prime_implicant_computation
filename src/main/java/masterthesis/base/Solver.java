@@ -1,19 +1,21 @@
 package masterthesis.base;
 
-import masterthesis.primebywatches.Watcher;
 import masterthesis.utils.Debug;
 import masterthesis.utils.DimacsFormatReader;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+/**
+ * Solver class is in charge of solving a SAT problem based on CNF data.
+ * Like providing a model, prime implicant(s), checking if the formula is SAT or NOT SAT.
+ */
 public class Solver {
     private final ApplicationContext ac;
     private final ClauseSet clauseSet;
-    private Model model = null;
+    private Model defaultModel = null;
     private SolverEngine engine = SolverEngine.LOGICNG;
-    private Implicant primeImplicant;
+    private Implicant defaultPrimeImplicant;
     private Map<Literal, ArrayList<Watcher>> watchedList;
 
     public Solver(String fileName) {
@@ -27,8 +29,8 @@ public class Solver {
 
     public void reset() {
         this.watchedList = new HashMap<>();
-        this.primeImplicant = new Implicant();
-        this.model = null;
+        this.defaultPrimeImplicant = new Implicant();
+        this.defaultModel = null;
     }
 
     public void setEngine(SolverEngine engine) {
@@ -39,20 +41,14 @@ public class Solver {
         reset();
     }
 
-    private void initWatchesAndSubset(final Implicant primeImplicant) throws CloneNotSupportedException {
+    private void initWatchesAndSubset(final Implicant primeImplicant, final Model model) throws CloneNotSupportedException {
         if (model.isEmpty()) {
-            System.out.println("Model doesn't exist, watched List cannot be initialized");
-            return;
+            throw new IllegalArgumentException("Must specify non empty defaultModel");
         }
         clauseSet.getClauses().stream().forEach(c -> {
             final Watcher watcher = new Watcher(c);
-            //watcher.initWatchedIndex(primeImplicant, this, ac);
             watcher.initWatchedIndex(primeImplicant, watchedList);
         });
-
-        // foreach l in PI do
-        //  foreach w in w(l) do
-        //      set watcher status to be success
         primeImplicant.getLiterals().stream().forEach(l -> {
             watchedList.computeIfAbsent(l, k -> new ArrayList<>()).stream()
                     .forEach(w -> {
@@ -62,10 +58,10 @@ public class Solver {
 
         // prime Unit propagation
         Debug.println(false, "First of all, add unit literals to PI", primeImplicant);
-        primeUnitPropagation(primeImplicant);
+        primeUnitPropagation(primeImplicant, model);
     }
 
-    private void primeUnitPropagation(final Implicant primeImplicant) throws CloneNotSupportedException {
+    private void primeUnitPropagation(final Implicant primeImplicant, final Model model) throws CloneNotSupportedException {
         Implicant uppi = (Implicant) primeImplicant.clone();
         do {
             uppi.getLiterals().forEach(l -> watchedList.getOrDefault(l, new ArrayList<>()).clear());
@@ -73,16 +69,15 @@ public class Solver {
             Implicant tempPI = (Implicant) uppi.clone();
             uppi.clear();
             tempPI.getLiterals().forEach(l -> {
-                //this.ac.unwatchAndPropagate(l.getComplementary(this.ac),clauseSet,uppi,model,this);
                 this.unwatchAndPropagate(l.getComplementary(), uppi, model);
             });
         } while (!uppi.isEmpty());
     }
 
-    private void primeByWatches(final Implicant primeImplicant) throws CloneNotSupportedException {
+    private void primeByWatches(final Implicant primeImplicant, final Model model) throws CloneNotSupportedException {
         Debug.println(false, primeImplicant);
         if (model.isEmpty()) {
-            System.err.println("Model does't exist, Please check your formula");
+            throw new IllegalArgumentException("Must specify a non empty defaultModel");
         }
         model.getLiterals().stream()
                 .filter(l -> !primeImplicant.contains(l))
@@ -103,7 +98,7 @@ public class Solver {
             Optional<Literal> o = m.getLiterals().stream().filter(l -> !primeImplicant.contains(l)).findFirst();
             Literal pickup = o.orElse(null);
             if (pickup == null) break;
-            m.removeLiteral(pickup); // remove the pickup literal from model
+            m.removeLiteral(pickup); // remove the pickup literal from defaultModel
             unwatchAndPropagate(pickup, primeImplicant, m);
         }
 
@@ -144,19 +139,40 @@ public class Solver {
         return !getModel().isEmpty();
     }
 
+    /**
+     * Compute a prime implicant under the default defaultModel
+     *
+     * @return
+     * @throws CloneNotSupportedException
+     */
     public Implicant getPrimeImplicant() throws CloneNotSupportedException {
-        // TODO: field variable model should converted to be a local variable
-        watchedList.clear();
-        if (primeImplicant.isEmpty()) {
-            initWatchesAndSubset(primeImplicant);
-            primeByWatches(primeImplicant);
+        if (this.defaultPrimeImplicant.isEmpty()) {
+            computePI(this.defaultPrimeImplicant, getModel());
         }
-        return this.primeImplicant;
+        return this.defaultPrimeImplicant;
     }
 
+    private void computePI(Implicant implicant, Model model) throws CloneNotSupportedException {
+        watchedList.clear();
+        initWatchesAndSubset(implicant, model);
+        primeByWatches(implicant, model);
+    }
 
     /**
-     * compute all prime implicants under the default model.
+     * Compute a prime implicant under the specified defaultModel
+     *
+     * @param model
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    public Implicant getPrimeImplicant(Model model) throws CloneNotSupportedException {
+        Implicant pi = new Implicant();
+        computePI(pi, model);
+        return pi;
+    }
+
+    /**
+     * compute all prime implicants under the default defaultModel.
      *
      * @return
      */
@@ -165,7 +181,7 @@ public class Solver {
     }
 
     /**
-     * Compute all prime implicants under the specified model.
+     * Compute all prime implicants under the specified defaultModel.
      * <p>
      * Step 1: initialize watched literals and subset of prime implicant
      * Step 2: Perform UnwatchAndPropagate(), now watched literals in the NOT SUCCESS watcher are all
@@ -178,15 +194,14 @@ public class Solver {
      * @return
      */
     public List<Implicant> getAllPrimeImplicants(Model model) throws CloneNotSupportedException {
-        // todo: think about how to deal with the vairable model.
         if (model == null || model.isEmpty()) return null;
-        this.model = model;
         watchedList.clear();
+        List<Implicant> allPI = new ArrayList<>();
         Implicant baseImplicant = new Implicant();
 
         // step 1:
-        initWatchesAndSubset(baseImplicant);
-        Debug.println(true,baseImplicant);
+        initWatchesAndSubset(baseImplicant, model);
+        Debug.println(false, baseImplicant);
         // step 2:
         model.getLiterals().stream()
                 .filter(l -> !baseImplicant.contains(l))
@@ -200,6 +215,13 @@ public class Solver {
         // Step 3:
         ClauseSet reformedCS = reformClauseSet(this.clauseSet, model);
         Debug.println(true, reformedCS.size());
+
+        // if the reformed clause set is empty, it means that the base implicant covers all clause set.
+        // No need to do more. The base implicant is the only one prime implicant.
+        if (reformedCS.size() == 0) {
+            allPI.add(baseImplicant);
+            return allPI;
+        }
 
         // Step 4
         LinkedHashMap<Literal, Integer> weight = weighting(reformedCS);
@@ -218,39 +240,55 @@ public class Solver {
         Debug.println(true, "Weights size = " + weight.size());
 
         // each implicant is an subset of a prime implicant
-        //List<Implicant> subsets = new ArrayList<>();
-        List<Implicant> subsets = Collections.synchronizedList(new ArrayList<Implicant>());
+        List<Implicant> subsets = new ArrayList<>();
         Implicant tempImplicant = new Implicant();
         for (Node root : trees) {
-            // do something with root node(root, subset, tImplicant)
-            dfs(root,subsets,tempImplicant);
+            dfs(root, subsets, tempImplicant);
         }
-        //Debug.println(true,subsets);
 
         // Step 6: combine the base implicant with the subset to generate all prime implicants
-        subsets.forEach(s->s.addLiterals(0,baseImplicant.getLiterals()));
 
 
-        return subsets;
+        subsets.forEach(implicant -> {
+            Implicant i = new Implicant();
+            i.addLiterals(baseImplicant.getLiterals());
+            i.addLiterals(implicant.getLiterals());
+            allPI.add(i);
+        });
+
+        return allPI;
     }
 
+    /**
+     * Deeply Search current node, if the node has children, recursively search to the leaf,
+     * alone the path to leaf, put the node's value into the temporary implicant.
+     * Finally, if the implicant is minimal, add the subsets of prime implicant.
+     *
+     * @param node        Current node.
+     * @param subsets     A list contains all subsets of prime implicant.
+     * @param tImplicants A temporary implicant object.
+     * @throws CloneNotSupportedException
+     */
     private void dfs(Node node, List<Implicant> subsets, Implicant tImplicants) throws CloneNotSupportedException {
         List<Node> children = node.getChildren();
         if (children != null && children.size() != 0) {
             tImplicants.addLiteral(node.getValue());
-            for(Node child : children){
+            for (Node child : children) {
                 dfs(child, subsets, tImplicants);
             }
             tImplicants.removeLiteral(node.getValue());
         } else {
-            Implicant i = (Implicant) tImplicants.clone();
-            i.addLiteral(node.getValue());
-            for(Implicant implicant: subsets){
-                if(implicant.isSubset(i)){
+            // reach the end node(the leaf). construct the implicant instance
+            // if the instance is not the minimal(subset of the instance is in the list)
+            // do not add the instance to the list.
+            Implicant instance = (Implicant) tImplicants.clone();
+            instance.addLiteral(node.getValue());
+            for (Implicant implicant : subsets) {
+                if (implicant.isSubset(instance)) {
                     return;
                 }
             }
-            subsets.add(i);//if any implicant in subset is a subset of i, then i is not minimal.
+            subsets.add(instance);
         }
     }
 
@@ -259,14 +297,13 @@ public class Solver {
      * Reform the clause set so that the returned clause set contains NON-PRIME clause,
      * and each clause contains only satisfied literals.
      *
-     * @param clauseSet     The original clause set to be reformed
-     * @param model The model of the original clause set
+     * @param clauseSet The original clause set to be reformed
+     * @param model     The defaultModel of the original clause set
      * @return Reformed ClauseSet
      */
     private ClauseSet reformClauseSet(ClauseSet clauseSet, Model model) {
         ClauseSet reformed = new ClauseSet();
         Debug.println(false, watchedList);
-        //Debug.println(true, baseImplicant);
         clauseSet.getClauses().stream()
                 .filter(clause -> clause.getState() != Clause.STATE.PRIME)
                 .forEach(clause -> {
@@ -280,10 +317,10 @@ public class Solver {
     }
 
     public Model getModel() {
-        if (this.model == null) {
-            this.model = ModelFactory.getModel(this.engine, ac);
+        if (this.defaultModel == null) {
+            this.defaultModel = ModelFactory.getModel(this.engine);
         }
-        return this.model;
+        return this.defaultModel;
     }
 
     public ClauseSet getClauseSet() {
@@ -387,6 +424,15 @@ public class Solver {
             parent.addChild(child);
             buildTree(reducedCS, child, li);
         }
+    }
+
+    public void primeImplicantCover() throws CloneNotSupportedException {
+        Implicant pi = this.getPrimeImplicant();
+        Clause clause = pi.toClause();
+        ClauseSet secondCS = new ClauseSet();
+        secondCS.init();
+        secondCS.addClause(clause);
+
     }
 
 }

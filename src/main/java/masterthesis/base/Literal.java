@@ -1,6 +1,5 @@
 package masterthesis.base;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
 public class Literal implements Comparable {

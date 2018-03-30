@@ -1,6 +1,7 @@
 
 import masterthesis.base.*;
 import masterthesis.utils.Debug;
+import masterthesis.utils.Util;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +16,8 @@ import java.util.stream.Stream;
 
 public class T {
 
-    public static final String SATPATH = "src/main/resources/sat/";
-    public static final String UNSATPATH = "src/main/resources/unsat/";
+    private static final String SATPATH = "src/main/resources/sat/";
+    private static final String UNSATPATH = "src/main/resources/unsat/";
     private ApplicationContext ac;
 
     @Before
@@ -205,7 +206,7 @@ public class T {
         final String fileNameTest = SATPATH + "formula07.cnf";
         int[] literals = new int[]{1, 2, 4, 5};
         Solver solver = new Solver(fileNameTest);
-        solver.setEngine(SolverEngine.ME);
+        solver.setEngine(SolverEngine.EMPTY);
 
         final Model model = solver.getModel();
         model.addLiterals(literals);
@@ -247,9 +248,9 @@ public class T {
     }
 
     @Test
-    /**
-     * Test if the prime implicant computed by my watched-literals program
-     * is equals to the prime implicant computed by sat4j library
+    /*
+      Test if the prime implicant computed by my watched-literals program
+      is equals to the prime implicant computed by sat4j library
      */
     public void testPiEquality() throws CloneNotSupportedException, IOException {
 //        final String[] fileNames = {"formula02.cnf","formula03.cnf","formula04.cnf",
@@ -275,10 +276,27 @@ public class T {
             Implicant primeImplicant  = solver.getPrimeImplicant();
 
             Implicant piFromSat4j = ImplicantFactory.getPrimeImplicant(ac);
-            Debug.println(true,name,primeImplicant.toStringPretty(),piFromSat4j);
+            Debug.println(true,name,primeImplicant,piFromSat4j);
             Assert.assertTrue(piFromSat4j.equals(primeImplicant));
         }
 
+    }
+
+    @Test
+    public void testPrimeImplicantUnderModel() throws CloneNotSupportedException {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula07.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Model original = solver.getModel();
+        Model custom = ModelFactory.getModel(SolverEngine.EMPTY);
+        custom.addLiterals(new int[]{1,2,3,4,5});
+        Assert.assertNotEquals(original,custom);
+        Implicant originalPI = solver.getPrimeImplicant();
+        Implicant customPI = solver.getPrimeImplicant(custom);
+        Debug.println(false,originalPI);
+        Debug.println(false,customPI);
+
+        Assert.assertNotEquals(originalPI,customPI);
     }
 
     @Test
@@ -309,66 +327,66 @@ public class T {
         Node root2 =  trees.get(0);
         Assert.assertEquals( ac.getLiteral(2), root2.getValue());
         Assert.assertEquals(1,root2.childrenSize());
-        Assert.assertEquals( ac.getLiteral(5),((Node)root2.getChildren().get(0)).getValue());
+        Assert.assertEquals( ac.getLiteral(5), root2.getChildren().get(0).getValue());
 
         Node root5 =  trees.get(1);
         Assert.assertEquals( ac.getLiteral(5), root5.getValue());
         Assert.assertEquals(1,root5.childrenSize());
-        Assert.assertEquals( ac.getLiteral(2),((Node)root5.getChildren().get(0)).getValue());
+        Assert.assertEquals( ac.getLiteral(2), root5.getChildren().get(0).getValue());
 
         Node root1 =  trees.get(2);
         Assert.assertEquals( ac.getLiteral(1), root1.getValue());
         Assert.assertEquals(5,root1.childrenSize());
 
-        Assert.assertEquals( ac.getLiteral(2),((Node)root1.getChildren().get(0)).getValue());
-        Assert.assertEquals( ac.getLiteral(3),((Node)root1.getChildren().get(1)).getValue());
-        Assert.assertEquals( ac.getLiteral(4),((Node)root1.getChildren().get(2)).getValue());
-        Assert.assertEquals( ac.getLiteral(5),((Node)root1.getChildren().get(3)).getValue());
-        Assert.assertEquals( ac.getLiteral(6),((Node)root1.getChildren().get(4)).getValue());
+        Assert.assertEquals( ac.getLiteral(2), root1.getChildren().get(0).getValue());
+        Assert.assertEquals( ac.getLiteral(3), root1.getChildren().get(1).getValue());
+        Assert.assertEquals( ac.getLiteral(4), root1.getChildren().get(2).getValue());
+        Assert.assertEquals( ac.getLiteral(5), root1.getChildren().get(3).getValue());
+        Assert.assertEquals( ac.getLiteral(6), root1.getChildren().get(4).getValue());
 
-        Assert.assertEquals(ac.getLiteral(3),((Node)(((Node)root1.getChildren().get(0)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root1.getChildren().get(0)).getChildren().get(1))).getValue());
+        Assert.assertEquals(ac.getLiteral(3), root1.getChildren().get(0).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(5), root1.getChildren().get(0).getChildren().get(1).getValue());
 
-        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root1.getChildren().get(1)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root1.getChildren().get(1).getChildren().get(0).getValue());
 
-        Assert.assertEquals(ac.getLiteral(6),((Node)(((Node)root1.getChildren().get(2)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(6), root1.getChildren().get(2).getChildren().get(0).getValue());
 
-        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root1.getChildren().get(3)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root1.getChildren().get(3).getChildren().get(0).getValue());
 
-        Assert.assertEquals(ac.getLiteral(4),((Node)(((Node)root1.getChildren().get(4)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(4), root1.getChildren().get(4).getChildren().get(0).getValue());
 
 
         Node root3 =  trees.get(3);
         Assert.assertEquals( ac.getLiteral(3), root3.getValue());
         Assert.assertEquals(1,root3.childrenSize());
-        Assert.assertEquals( ac.getLiteral(2),((Node)root3.getChildren().get(0)).getValue());
+        Assert.assertEquals( ac.getLiteral(2), root3.getChildren().get(0).getValue());
 
         Node root4 =  trees.get(4);
         Assert.assertEquals( ac.getLiteral(4), root4.getValue());
         Assert.assertEquals(4,root4.childrenSize());
-        Assert.assertEquals( ac.getLiteral(1),((Node)root4.getChildren().get(0)).getValue());
-        Assert.assertEquals( ac.getLiteral(2),((Node)root4.getChildren().get(1)).getValue());
-        Assert.assertEquals( ac.getLiteral(5),((Node)root4.getChildren().get(2)).getValue());
-        Assert.assertEquals( ac.getLiteral(6),((Node)root4.getChildren().get(3)).getValue());
+        Assert.assertEquals( ac.getLiteral(1), root4.getChildren().get(0).getValue());
+        Assert.assertEquals( ac.getLiteral(2), root4.getChildren().get(1).getValue());
+        Assert.assertEquals( ac.getLiteral(5), root4.getChildren().get(2).getValue());
+        Assert.assertEquals( ac.getLiteral(6), root4.getChildren().get(3).getValue());
 
-        Assert.assertEquals(ac.getLiteral(6),((Node)(((Node)root4.getChildren().get(0)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root4.getChildren().get(1)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root4.getChildren().get(2)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(1),((Node)(((Node)root4.getChildren().get(3)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(6), root4.getChildren().get(0).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(5), root4.getChildren().get(1).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root4.getChildren().get(2).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(1), root4.getChildren().get(3).getChildren().get(0).getValue());
 
 
         Node root6 =  trees.get(5);
         Assert.assertEquals( ac.getLiteral(6), root6.getValue());
         Assert.assertEquals(4,root6.childrenSize());
-        Assert.assertEquals( ac.getLiteral(1),((Node)root6.getChildren().get(0)).getValue());
-        Assert.assertEquals( ac.getLiteral(2),((Node)root6.getChildren().get(1)).getValue());
-        Assert.assertEquals( ac.getLiteral(4),((Node)root6.getChildren().get(2)).getValue());
-        Assert.assertEquals( ac.getLiteral(5),((Node)root6.getChildren().get(3)).getValue());
+        Assert.assertEquals( ac.getLiteral(1), root6.getChildren().get(0).getValue());
+        Assert.assertEquals( ac.getLiteral(2), root6.getChildren().get(1).getValue());
+        Assert.assertEquals( ac.getLiteral(4), root6.getChildren().get(2).getValue());
+        Assert.assertEquals( ac.getLiteral(5), root6.getChildren().get(3).getValue());
 
-        Assert.assertEquals(ac.getLiteral(4),((Node)(((Node)root6.getChildren().get(0)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(5),((Node)(((Node)root6.getChildren().get(1)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(1),((Node)(((Node)root6.getChildren().get(2)).getChildren().get(0))).getValue());
-        Assert.assertEquals(ac.getLiteral(2),((Node)(((Node)root6.getChildren().get(3)).getChildren().get(0))).getValue());
+        Assert.assertEquals(ac.getLiteral(4), root6.getChildren().get(0).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(5), root6.getChildren().get(1).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(1), root6.getChildren().get(2).getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root6.getChildren().get(3).getChildren().get(0).getValue());
     }
 
     @Test
@@ -379,6 +397,94 @@ public class T {
         List<Implicant> allImplicants = solver.getAllPrimeImplicants();
         Debug.println(true,allImplicants);
         Assert.assertEquals(3,allImplicants.size());
+
+        Implicant implicant1 =  allImplicants.get(0);
+        Implicant implicant2 =  allImplicants.get(1);
+        Implicant implicant3 =  allImplicants.get(2);
+
+        int[] value1 = {1,3,2,4,9,-8};
+        Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
+
+        int[] value2 = {1,3,2,4,9,-6,-10};
+        Assert.assertTrue(implicant2.containsAll(Util.toLiteralsList(value2)));
+
+        int[] value3 = {1,3,2,4,9,-7,-10};
+        Assert.assertTrue(implicant3.containsAll(Util.toLiteralsList(value3)));
+
+    }
+
+    @Test
+    public void testAllPrimeImplicants2() throws CloneNotSupportedException {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula07.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Model model = ModelFactory.getModel(SolverEngine.EMPTY);
+        model.addLiterals(new int[]{1,2,3,4,5});
+        List<Implicant> allImplicants = solver.getAllPrimeImplicants(model);
+        Debug.println(true,allImplicants);
+
+        Assert.assertEquals(5,allImplicants.size());
+
+        Implicant implicant1 =  allImplicants.get(0);
+        Implicant implicant2 =  allImplicants.get(1);
+        Implicant implicant3 =  allImplicants.get(2);
+        Implicant implicant4 =  allImplicants.get(3);
+        Implicant implicant5=  allImplicants.get(4);
+
+        int[] value1 = {1};
+        Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
+
+        int[] value2 = {2,4};
+        Assert.assertTrue(implicant2.containsAll(Util.toLiteralsList(value2)));
+
+        int[] value3 = {2,5};
+        Assert.assertTrue(implicant3.containsAll(Util.toLiteralsList(value3)));
+
+        int[] value4 = {3,4};
+        Assert.assertTrue(implicant4.containsAll(Util.toLiteralsList(value4)));
+
+        int[] value5 = {3,5};
+        Assert.assertTrue(implicant5.containsAll(Util.toLiteralsList(value5)));
+
+    }
+
+    @Test
+    public void testAllPrimeImplicants3() throws CloneNotSupportedException {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula04.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Debug.println(true,solver.getModel());
+        List<Implicant> allImplicants = solver.getAllPrimeImplicants();
+        Debug.println(true,allImplicants);
+
+        Assert.assertEquals(1,allImplicants.size());
+
+        Implicant implicant1 =  allImplicants.get(0);
+        int[] value1 = {-6,-3,-1,-2,-5,-9,-4};
+        Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
+    }
+
+    @Test
+    public void testAllPrimeImplicants4() throws CloneNotSupportedException {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula03.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Debug.println(true,solver.getModel());
+        List<Implicant> allImplicants = solver.getAllPrimeImplicants();
+        Debug.println(true,allImplicants);
+
+        Assert.assertEquals(1,allImplicants.size());
+        Implicant implicant1 =  allImplicants.get(0);
+        int[] value1 = {1,2,4};
+        Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
+    }
+
+    @Test
+    public void testPrimeImplicantCover() throws CloneNotSupportedException {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula03.cnf";
+        Solver solver = new Solver(fileNameTest);
+        solver.primeImplicantCover();
     }
 
 
@@ -424,10 +530,8 @@ public class T {
                 clone = (Implicant) pi.clone();
                 clone.removeLiteral(literal);
                 if(containAtLeastOnePiLiteral(cs,clone)){
-                    clone = null;
                     return false;
                 }
-                clone = null;
             }
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();

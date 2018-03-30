@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 public class LogicNGModel extends Model {
 
-    public LogicNGModel(ApplicationContext ac) {
-        super(ac);
+    public LogicNGModel() {
+        super();
     }
 
     @Override

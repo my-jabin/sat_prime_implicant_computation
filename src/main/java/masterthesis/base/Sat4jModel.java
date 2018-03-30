@@ -14,8 +14,8 @@ public class Sat4jModel extends Model {
 
     private static final int MAXVAR = 1000000;
 
-    public Sat4jModel(ApplicationContext ac) {
-        super(ac);
+    public Sat4jModel() {
+        super();
     }
 
     @Override

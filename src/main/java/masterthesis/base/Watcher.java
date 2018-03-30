@@ -1,6 +1,4 @@
-package masterthesis.primebywatches;
-
-import masterthesis.base.*;
+package masterthesis.base;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -17,20 +15,6 @@ public class Watcher {
         this.clause = clause;
         status = Status.DEFAULT;
     }
-
-//    public void initWatchedIndex(final Implicant primeImplicant, final WatchedList watches, final ApplicationContext ac) {
-//        if (clause.isEmpyt()) return;
-//
-//        if (clause.size() > 1) {
-//            watchedIndex1 = 0;
-//            watchedIndex2 = 1;
-//            watches.get(clause.get(0)).add(this);
-//            watches.get(clause.get(1)).add(this);
-//        } else {
-//            watchedIndex1 = 0;
-//            primeImplicant.addLiteral(clause.get(0));
-//        }
-//    }
 
     public void initWatchedIndex(final Implicant primeImplicant, final Map<Literal, ArrayList<Watcher>> watchedList) {
         if (clause.isEmpyt()) return;

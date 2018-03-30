@@ -1,14 +1,14 @@
 package masterthesis.base;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class Model implements Cloneable {
 
     private ArrayList<Literal> literals;
-    final ApplicationContext ac;
+    final ApplicationContext ac = ApplicationContext.getInstance();
 
-    public Model(ApplicationContext ac) {
-        this.ac = ac;
+    public Model() {
         this.literals =  new ArrayList<>();
         generate();
     }
@@ -58,6 +58,26 @@ public abstract class Model implements Cloneable {
         Model m = (Model)super.clone();
         m.literals = (ArrayList<Literal>) literals.clone();
         return m;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Model model = (Model) o;
+        if(model.getLiterals() == null
+                || model.getLiterals().size() ==0
+                || this.getLiterals().size() != model.getLiterals().size()) return false;
+        for(Literal l : this.getLiterals()){
+            if(!model.contains(l))
+                return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(literals);
     }
 
     @Override

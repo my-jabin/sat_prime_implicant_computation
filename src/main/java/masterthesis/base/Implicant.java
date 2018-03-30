@@ -1,17 +1,17 @@
 package masterthesis.base;
 
-import javafx.collections.transformation.SortedList;
-import masterthesis.utils.Debug;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class Implicant implements Cloneable{
 
-    private ArrayList<Literal> literals;
+    private LinkedHashSet<Literal> literals;
 
     public Implicant() {
-        this.literals =  new ArrayList<>();
+        this.literals =  new LinkedHashSet<>();
     }
 
     public void removeLiteral(Literal literal){
@@ -21,39 +21,22 @@ public class Implicant implements Cloneable{
     }
 
     public boolean contains(Literal l){
-        Debug.println(false,"====contains literal? " + l +  " "+this.literals.contains(l));
         return this.literals.contains(l);
     }
 
     public void addLiteral(Literal l){
-        if(!this.literals.contains(l))
-            this.literals.add(l);
+        this.literals.add(l);
     }
 
-    public void addLiterals(List<Literal> list){
-        list.forEach(l -> {
-            if(!this.literals.contains(l))
-                this.literals.add(l);
-        });
+    public void addLiterals(Collection<Literal> list){
+        this.literals.addAll(list);
     }
 
-    /**
-     * Inserts a collection of literals, starting at the specified position.
-     * @param index
-     * @param list
-     */
-    public void addLiterals(int index, List<Literal> list){
-        this.literals.addAll(index,list);
-    }
-
-    public Literal get(int index){
-        return this.literals.get(index);
-    }
 
     public void clear(){
         this.literals.clear();
     }
-    public ArrayList<Literal> getLiterals() {
+    public Set<Literal> getLiterals() {
         return literals;
     }
 
@@ -68,7 +51,7 @@ public class Implicant implements Cloneable{
     @Override
     public Object clone() throws CloneNotSupportedException {
         Implicant i = (Implicant) super.clone();
-        i.literals = (ArrayList<Literal>) literals.clone();
+        i.literals = (LinkedHashSet<Literal>) literals.clone();
         return i;
     }
 
@@ -81,12 +64,17 @@ public class Implicant implements Cloneable{
      */
     public boolean isSubset(Implicant i){
         if(this.isEmpty() || this.size() > i.size()) return false;
-        for(Literal l: this.literals){
-            if(!i.contains(l)){
-                return false;
-            }
-        }
-        return true;
+        return i.getLiterals().containsAll(this.getLiterals());
+    }
+
+    public boolean containsAll(Collection list){
+        return this.getLiterals().containsAll(list);
+    }
+
+    public Clause toClause(){
+        Clause clause = new Clause();
+        clause.addLiterals(this.getLiterals());
+        return clause;
     }
 
     @Override
@@ -94,21 +82,6 @@ public class Implicant implements Cloneable{
         StringBuilder sb = new StringBuilder();
         sb.append("Implicant(").append(this.literals.size()).append("): (");
         this.literals.forEach( l -> sb.append(l.toString()).append(" "));
-        sb.deleteCharAt(sb.lastIndexOf(" "));
-        sb.append(")");
-        return sb.toString();
-    }
-
-
-    public String toStringPretty() {
-        StringBuilder sb = new StringBuilder();
-        Collections.sort(this.literals);
-        List<Literal> newList =  this.literals.stream()
-                .sorted((o1, o2) -> o1.compareTo(o2))
-                .collect(Collectors.toList());
-
-        sb.append("Implicant(").append(newList.size()).append("): (");
-        newList.forEach( l -> sb.append(l.toString()).append(" "));
         sb.deleteCharAt(sb.lastIndexOf(" "));
         sb.append(")");
         return sb.toString();

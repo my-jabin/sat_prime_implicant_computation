@@ -1,8 +1,7 @@
 package masterthesis.base;
 
-import javafx.beans.binding.StringBinding;
-
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class Clause {
 
@@ -20,6 +19,10 @@ public class Clause {
 
     public void addLiteral(final Literal l){
         this.literals.add(l);
+    }
+
+    public void addLiterals(Collection<Literal> c){
+        this.literals.addAll(c);
     }
 
     public ArrayList<Literal> getLiterals() {

@@ -5,22 +5,11 @@ import java.util.ArrayList;
 public class ClauseSet{
 
     private ArrayList<Clause> clauses;
-    private final ApplicationContext ac;
-
-//    public ClauseSet(final ApplicationContext ac) {
-//        this(ac,false);
-//    }
+    private final ApplicationContext ac = ApplicationContext.getInstance();
 
     public ClauseSet(){
         clauses = new ArrayList<>();
-        this.ac = ApplicationContext.getInstance();
     }
-//    public ClauseSet(final ApplicationContext ac, boolean empty){
-//        this.ac = ac;
-//        clauses = new ArrayList<>();
-//        if(!empty)
-//            init();
-//    }
 
     public void init(){
         if(ac.getCNFContent().isEmpty()){

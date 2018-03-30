@@ -12,37 +12,37 @@ import java.util.List;
 
 public class ModelFactory {
 
-    public static Model getModel(SolverEngine engine, ApplicationContext ac) {
+    public static Model getModel(SolverEngine engine) {
         switch (engine) {
-            case ME:
-                return new CustomModel(ac);
+            case EMPTY:
+                return new CustomModel();
             case SAT4J:
-                return new Sat4jModel(ac);
+                return new Sat4jModel();
             case LOGICNG:
-                return new LogicNGModel(ac);
+                return new LogicNGModel();
             default:
                 throw new IllegalArgumentException("Must specify model engine");
         }
     }
 
-    public static List<Model> getAllModels(SolverEngine engine, ApplicationContext ac){
+    public static List<Model> getAllModels(SolverEngine engine){
         List<Model> models = new ArrayList<>();
         switch (engine) {
             case SAT4J:
-                return getAllSat4jModels(ac);
+                return getAllSat4jModels();
             default:
                 return null;
         }
     }
 
-    private static List<Model> getAllSat4jModels(ApplicationContext ac){
+    private static List<Model> getAllSat4jModels(){
         int MAXVAR = 1000000;
         ISolver solver = SolverFactory.newDefault();
         solver.setTimeout(3600); // 1 hour timeout
         solver.newVar(MAXVAR);
         List<Model> models = new ArrayList<>();
         ISolver mi = new ModelIterator(solver);
-
+        final ApplicationContext ac = ApplicationContext.getInstance();
         try {
             for (ArrayList<Integer> line : ac.getCNFContent()) {
                 int[] literals = new int[line.size()];
@@ -54,7 +54,7 @@ public class ModelFactory {
 
             Model model = null;
             while (mi.isSatisfiable()) {
-                model = new Sat4jModel(ac);
+                model = new Sat4jModel();
                 for (int i : mi.model()) {
                     model.addLiteral(ac.getLiteral(i));
                 }
