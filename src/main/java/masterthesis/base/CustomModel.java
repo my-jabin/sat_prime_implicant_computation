@@ -3,7 +3,7 @@ package masterthesis.base;
 public class CustomModel extends Model
 {
     public CustomModel() {
-        super();
+        super(null);
     }
 
     @Override

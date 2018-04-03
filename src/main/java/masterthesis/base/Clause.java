@@ -1,7 +1,11 @@
 package masterthesis.base;
 
+import com.sun.jdi.event.ClassUnloadEvent;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class Clause {
 
@@ -61,5 +65,22 @@ public class Clause {
         });
         sb.append(this.state);
         return sb.toString();
+    }
+
+    public String toPrettyString() {
+        StringBuilder sb = new StringBuilder();
+        this.literals.stream().sorted().collect(Collectors.toList()).forEach(l ->{
+            sb.append(l).append(" ");
+        });
+        sb.append(this.state);
+        return sb.toString();
+    }
+
+    public Clause reverse(){
+        Clause clause = new Clause();
+        for(Literal l : this.getLiterals()){
+            clause.addLiteral( l.getComplementary());
+        }
+        return clause;
     }
 }

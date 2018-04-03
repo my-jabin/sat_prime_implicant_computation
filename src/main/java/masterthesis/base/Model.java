@@ -6,10 +6,12 @@ import java.util.Objects;
 public abstract class Model implements Cloneable {
 
     private ArrayList<Literal> literals;
+    protected ClauseSet cs;
     final ApplicationContext ac = ApplicationContext.getInstance();
 
-    public Model() {
+    public Model(ClauseSet cs) {
         this.literals =  new ArrayList<>();
+        this.cs = cs;
         generate();
     }
 

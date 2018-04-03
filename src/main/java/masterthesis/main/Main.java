@@ -2,11 +2,20 @@ package masterthesis.main;
 
 import masterthesis.base.*;
 import masterthesis.utils.*;
+import org.logicng.datastructures.Tristate;
+import org.logicng.formulas.FormulaFactory;
+import org.logicng.formulas.Literal;
+import org.logicng.solvers.MiniSat;
+import org.logicng.solvers.SATSolver;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class Main {
 
     public static final String path = "src/main/resources/sat/";
-    public static final String fileNameTest = path + "formula05.cnf";
+    public static final String fileNameTest = path + "formula07.cnf";
     public static final String filename = path + "D1119_M23.cnf";
     //public static final String fileName = path +"dp02s02.shuffled.cnf";
 
@@ -17,22 +26,52 @@ public class Main {
         //testGenModelsFrom4J();
         //testPISat4j();
 
-        // I should write like this:
-//        Solver solver = new Solver(fileNameTest);
-        //solver.setEngine(DEFAULT is LogicNG);
-        // solver.getModel();
-        // solver.getClauseSet()
-//        if(solver.sat()){
-//            solver.getPrimeImplicant();
-//        }
+//        testProblem();
+        //testAssignmentSat();
 
     }
 
-    private static void mainMethod() throws CloneNotSupportedException {
-        Solver solver = new Solver(fileNameTest);
+    private static void testProblem(){
+        Problem.primeImplicantCover(fileNameTest);
+    }
 
+    private static void testAssignmentSat(){
+
+        Solver mySolver = new Solver(fileNameTest);
+        ClauseSet cs = mySolver.getClauseSet();
+        final FormulaFactory factory = new FormulaFactory();
+        final SATSolver logicSolver = MiniSat.miniSat(factory);
+        logicSolver.reset();
+
+        final ArrayList<Literal> literals = new ArrayList<>();
+        cs.getClauses().forEach(clause -> {
+            literals.clear();
+            clause.getLiterals().forEach(literal -> {
+                String var = "v" + Math.abs(literal.getValue());
+                literals.add(literal.getPolarity() ? factory.literal(var,true): factory.literal(var,false));
+            });
+            if(!literals.isEmpty()){
+                logicSolver.add(factory.or(literals));
+            }
+        });
+
+        List<Literal> assumption = new ArrayList<>();
+        assumption.add(factory.literal("1",true));
+        assumption.add(factory.literal("2",false));
+        assumption.add(factory.literal("3",false));
+        assumption.add(factory.literal("4",false));
+        assumption.add(factory.literal("5",false));
+        Tristate result = logicSolver.sat(assumption);
+        Debug.println(true,result);
+
+    }
+
+    private static void mainMethod() {
+        Solver solver = new Solver(fileNameTest);
+        Model model = ModelFactory.getModel(SolverEngine.EMPTY);
+        model.addLiterals(new int[]{2,-3,-4,5});
         if (solver.sat()) {
-            Implicant pi = solver.getPrimeImplicant();
+            Implicant pi = solver.getPrimeImplicant(model);
             Debug.println(true, pi);
         }
 

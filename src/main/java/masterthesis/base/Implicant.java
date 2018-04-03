@@ -1,23 +1,37 @@
 package masterthesis.base;
 
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class Implicant implements Cloneable{
+public class Implicant{
 
     private LinkedHashSet<Literal> literals;
+    private ApplicationContext ac = ApplicationContext.getInstance();
 
     public Implicant() {
         this.literals =  new LinkedHashSet<>();
+    }
+
+    public Implicant(Implicant implicant){
+        this.literals = new LinkedHashSet<>(implicant.getLiterals());
+    }
+
+    public Implicant(int[] literals){
+        this.literals = new LinkedHashSet<>();
+        for(int i : literals){
+            this.addLiteral(ac.getLiteral(i));
+        }
     }
 
     public void removeLiteral(Literal literal){
         if(literals != null && !literals.isEmpty()){
             literals.remove(literal);
         }
+    }
+
+    public void removeLiteral(int l){
+        removeLiteral(ac.getLiteral(l));
     }
 
     public boolean contains(Literal l){
@@ -48,13 +62,6 @@ public class Implicant implements Cloneable{
         return this.literals.size();
     }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        Implicant i = (Implicant) super.clone();
-        i.literals = (LinkedHashSet<Literal>) literals.clone();
-        return i;
-    }
-
     /**
      * If the instance is a subset of implicant i, then it returns true, otherwise false.
      * If the instance contains no literal, returns also false.
@@ -82,6 +89,17 @@ public class Implicant implements Cloneable{
         StringBuilder sb = new StringBuilder();
         sb.append("Implicant(").append(this.literals.size()).append("): (");
         this.literals.forEach( l -> sb.append(l.toString()).append(" "));
+        sb.deleteCharAt(sb.lastIndexOf(" "));
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public String toPrettyString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("Implicant(").append(this.literals.size()).append("): (");
+        for (Literal literal : this.literals.stream().sorted().collect(Collectors.toList())) {
+            sb.append(literal.toString()).append(" ");
+        }
         sb.deleteCharAt(sb.lastIndexOf(" "));
         sb.append(")");
         return sb.toString();

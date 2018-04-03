@@ -32,6 +32,10 @@ public class Literal implements Comparable {
         return value;
     }
 
+    public int toInteger() {
+        return this.polarity ? this.value : -this.value;
+    }
+
     @Override
     public String toString() {
         return polarity ? String.valueOf(value) : "-" + value;

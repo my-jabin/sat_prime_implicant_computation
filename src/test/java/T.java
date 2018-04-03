@@ -1,6 +1,7 @@
 
 import masterthesis.base.*;
 import masterthesis.utils.Debug;
+import masterthesis.utils.Sat4jTool;
 import masterthesis.utils.Util;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +22,7 @@ public class T {
     private ApplicationContext ac;
 
     @Before
-    public void init(){
+    public void init() {
         this.ac = ApplicationContext.getInstance();
     }
 
@@ -35,7 +36,7 @@ public class T {
 
 
     @Test
-    public void testCase2() throws CloneNotSupportedException {
+    public void testCase2() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula02.cnf";
         Solver solver = new Solver(fileNameTest);
@@ -48,21 +49,18 @@ public class T {
         Assert.assertTrue(model.contains(ac.getLiteral(-4)));
         Assert.assertTrue(model.contains(ac.getLiteral(5)));
 
-
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
-        Assert.assertEquals(5,primeImplicant.size());
+        Implicant primeImplicant = solver.getPrimeImplicant();
+        Assert.assertEquals(5, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(1)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-2)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(5)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-4)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-3)));
-
-       // Assert.assertTrue(Tester.testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
     }
 
     @Test
-    public void testCase3() throws CloneNotSupportedException {
+    public void testCase3() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula03.cnf";
         Solver solver = new Solver(fileNameTest);
@@ -76,18 +74,15 @@ public class T {
 
 
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
-        Assert.assertEquals(3,primeImplicant.size());
+        Implicant primeImplicant = solver.getPrimeImplicant();
+        Assert.assertEquals(3, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(1)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(4)));
-
-        //Assert.assertTrue(Tester.testEquivalenceWithLogicNG(clauseSet,primeImplicant));
-        //Assert.assertTrue(Tester.testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
     }
 
     @Test
-    public void testCase4() throws CloneNotSupportedException {
+    public void testCase4() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula04.cnf";
         Solver solver = new Solver(fileNameTest);
@@ -105,7 +100,7 @@ public class T {
         Assert.assertTrue(model.contains(ac.getLiteral(-9)));
 
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
+        Implicant primeImplicant = solver.getPrimeImplicant();
         Assert.assertEquals(7, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-6)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-3)));
@@ -114,13 +109,10 @@ public class T {
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-5)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-9)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-6)));
-
-//        Assert.assertTrue(Tester.testEquivalenceWithLogicNG(clauseSet,primeImplicant));
-        //Assert.assertTrue(Tester.testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
     }
 
     @Test
-    public void testCase5() throws CloneNotSupportedException {
+    public void testCase5() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula05.cnf";
         Solver solver = new Solver(fileNameTest);
@@ -139,7 +131,7 @@ public class T {
         Assert.assertTrue(model.contains(ac.getLiteral(-11)));
 
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
+        Implicant primeImplicant = solver.getPrimeImplicant();
         Assert.assertEquals(6, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(1)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(3)));
@@ -147,13 +139,10 @@ public class T {
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(4)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(9)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-8)));
-
-        //Assert.assertTrue(Tester.testEquivalenceWithLogicNG(clauseSet,primeImplicant));
-        //Assert.assertTrue(Tester.testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
     }
 
     @Test
-    public void testCase6() throws CloneNotSupportedException {
+    public void testCase6() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula06.cnf";
         Solver solver = new Solver(fileNameTest);
@@ -181,7 +170,7 @@ public class T {
         Assert.assertTrue(model.contains(ac.getLiteral(-9)));
 
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
+        Implicant primeImplicant = solver.getPrimeImplicant();
         Assert.assertEquals(11, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-16)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-3)));
@@ -194,14 +183,10 @@ public class T {
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-19)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-8)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-15)));
-
-        //Assert.assertTrue(Tester.testEquivalenceWithLogicNG(clauseSet,primeImplicant));
-        //Assert.assertTrue(Tester.testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
-
     }
 
     @Test
-    public void testCase7() throws CloneNotSupportedException {
+    public void testCase7() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula07.cnf";
         int[] literals = new int[]{1, 2, 4, 5};
@@ -217,33 +202,33 @@ public class T {
         Assert.assertTrue(model.contains(ac.getLiteral(5)));
 
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
+        Implicant primeImplicant = solver.getPrimeImplicant();
         Assert.assertEquals(2, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(5)));
     }
 
     @Test
-    public void testCase7And1() throws CloneNotSupportedException {
+    public void testCase7And1() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula07.cnf";
 
         Solver solver = new Solver(fileNameTest);
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
+        Implicant primeImplicant = solver.getPrimeImplicant();
         Assert.assertEquals(2, primeImplicant.size());
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
         Assert.assertTrue(primeImplicant.contains(ac.getLiteral(4)));
     }
 
     @Test
-    public void testCase8() throws CloneNotSupportedException {
+    public void testCase8() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "D1119_M23.cnf";
         Solver solver = new Solver(fileNameTest);
         Assert.assertTrue(solver.sat());
-        Implicant primeImplicant  = solver.getPrimeImplicant();
-        ClauseSet clauseSet =  solver.getClauseSet();
+        Implicant primeImplicant = solver.getPrimeImplicant();
+        ClauseSet clauseSet = solver.getClauseSet();
         Assert.assertTrue(testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
     }
 
@@ -252,10 +237,7 @@ public class T {
       Test if the prime implicant computed by my watched-literals program
       is equals to the prime implicant computed by sat4j library
      */
-    public void testPiEquality() throws CloneNotSupportedException, IOException {
-//        final String[] fileNames = {"formula02.cnf","formula03.cnf","formula04.cnf",
-//                "formula05.cnf","formula06.cnf","formula07.cnf"};
-        //final String[] fileNames = {"dp02s02.shuffled.cnf","D1119_M23.cnf"};
+    public void testPiEquality() throws IOException {
         List<String> fileNames;
         Path start = Paths.get(SATPATH);
         int maxDepth = 2;
@@ -268,49 +250,47 @@ public class T {
 
         for (String name : fileNames) {
             this.ac.reset();
-            //new DimacsFormatReader(SATPATH + name).readCNF(ac);
             Solver solver = new Solver(name);
             solver.setEngine(SolverEngine.SAT4J);
 
             Assert.assertTrue(solver.sat());
-            Implicant primeImplicant  = solver.getPrimeImplicant();
-
-            Implicant piFromSat4j = ImplicantFactory.getPrimeImplicant(ac);
-            Debug.println(true,name,primeImplicant,piFromSat4j);
-            Assert.assertTrue(piFromSat4j.equals(primeImplicant));
+            Implicant primeImplicant = solver.getPrimeImplicant();
+            Implicant piFromSat4j = Sat4jTool.primeImplicant(solver.getClauseSet());
+            Debug.println(true, name, primeImplicant, piFromSat4j);
+            Assert.assertEquals(piFromSat4j, primeImplicant);
         }
 
     }
 
     @Test
-    public void testPrimeImplicantUnderModel() throws CloneNotSupportedException {
+    public void testPrimeImplicantUnderModel() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula07.cnf";
         Solver solver = new Solver(fileNameTest);
         Model original = solver.getModel();
         Model custom = ModelFactory.getModel(SolverEngine.EMPTY);
-        custom.addLiterals(new int[]{1,2,3,4,5});
-        Assert.assertNotEquals(original,custom);
+        custom.addLiterals(new int[]{1, 2, 3, 4, 5});
+        Assert.assertNotEquals(original, custom);
         Implicant originalPI = solver.getPrimeImplicant();
         Implicant customPI = solver.getPrimeImplicant(custom);
-        Debug.println(false,originalPI);
-        Debug.println(false,customPI);
+        Debug.println(false, originalPI);
+        Debug.println(false, customPI);
 
-        Assert.assertNotEquals(originalPI,customPI);
+        Assert.assertNotEquals(originalPI, customPI);
     }
 
     @Test
-    public void testBuildTree(){
+    public void testBuildTree() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula08.cnf";
         Solver solver = new Solver(fileNameTest);
         LinkedHashMap<Literal, Integer> weight = solver.weighting(solver.getClauseSet());
-        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(1)));
-        Assert.assertEquals(3, (long)weight.get(ac.getLiteral(2)));
-        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(3)));
-        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(4)));
-        Assert.assertEquals(3, (long)weight.get(ac.getLiteral(5)));
-        Assert.assertEquals(2, (long)weight.get(ac.getLiteral(6)));
+        Assert.assertEquals(2, (long) weight.get(ac.getLiteral(1)));
+        Assert.assertEquals(3, (long) weight.get(ac.getLiteral(2)));
+        Assert.assertEquals(2, (long) weight.get(ac.getLiteral(3)));
+        Assert.assertEquals(2, (long) weight.get(ac.getLiteral(4)));
+        Assert.assertEquals(3, (long) weight.get(ac.getLiteral(5)));
+        Assert.assertEquals(2, (long) weight.get(ac.getLiteral(6)));
 
         ArrayList<Node> trees = new ArrayList<>();
 
@@ -324,25 +304,25 @@ public class T {
 
         Assert.assertEquals(6, trees.size());
 
-        Node root2 =  trees.get(0);
-        Assert.assertEquals( ac.getLiteral(2), root2.getValue());
-        Assert.assertEquals(1,root2.childrenSize());
-        Assert.assertEquals( ac.getLiteral(5), root2.getChildren().get(0).getValue());
+        Node root2 = trees.get(0);
+        Assert.assertEquals(ac.getLiteral(2), root2.getValue());
+        Assert.assertEquals(1, root2.childrenSize());
+        Assert.assertEquals(ac.getLiteral(5), root2.getChildren().get(0).getValue());
 
-        Node root5 =  trees.get(1);
-        Assert.assertEquals( ac.getLiteral(5), root5.getValue());
-        Assert.assertEquals(1,root5.childrenSize());
-        Assert.assertEquals( ac.getLiteral(2), root5.getChildren().get(0).getValue());
+        Node root5 = trees.get(1);
+        Assert.assertEquals(ac.getLiteral(5), root5.getValue());
+        Assert.assertEquals(1, root5.childrenSize());
+        Assert.assertEquals(ac.getLiteral(2), root5.getChildren().get(0).getValue());
 
-        Node root1 =  trees.get(2);
-        Assert.assertEquals( ac.getLiteral(1), root1.getValue());
-        Assert.assertEquals(5,root1.childrenSize());
+        Node root1 = trees.get(2);
+        Assert.assertEquals(ac.getLiteral(1), root1.getValue());
+        Assert.assertEquals(5, root1.childrenSize());
 
-        Assert.assertEquals( ac.getLiteral(2), root1.getChildren().get(0).getValue());
-        Assert.assertEquals( ac.getLiteral(3), root1.getChildren().get(1).getValue());
-        Assert.assertEquals( ac.getLiteral(4), root1.getChildren().get(2).getValue());
-        Assert.assertEquals( ac.getLiteral(5), root1.getChildren().get(3).getValue());
-        Assert.assertEquals( ac.getLiteral(6), root1.getChildren().get(4).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root1.getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(3), root1.getChildren().get(1).getValue());
+        Assert.assertEquals(ac.getLiteral(4), root1.getChildren().get(2).getValue());
+        Assert.assertEquals(ac.getLiteral(5), root1.getChildren().get(3).getValue());
+        Assert.assertEquals(ac.getLiteral(6), root1.getChildren().get(4).getValue());
 
         Assert.assertEquals(ac.getLiteral(3), root1.getChildren().get(0).getChildren().get(0).getValue());
         Assert.assertEquals(ac.getLiteral(5), root1.getChildren().get(0).getChildren().get(1).getValue());
@@ -356,18 +336,18 @@ public class T {
         Assert.assertEquals(ac.getLiteral(4), root1.getChildren().get(4).getChildren().get(0).getValue());
 
 
-        Node root3 =  trees.get(3);
-        Assert.assertEquals( ac.getLiteral(3), root3.getValue());
-        Assert.assertEquals(1,root3.childrenSize());
-        Assert.assertEquals( ac.getLiteral(2), root3.getChildren().get(0).getValue());
+        Node root3 = trees.get(3);
+        Assert.assertEquals(ac.getLiteral(3), root3.getValue());
+        Assert.assertEquals(1, root3.childrenSize());
+        Assert.assertEquals(ac.getLiteral(2), root3.getChildren().get(0).getValue());
 
-        Node root4 =  trees.get(4);
-        Assert.assertEquals( ac.getLiteral(4), root4.getValue());
-        Assert.assertEquals(4,root4.childrenSize());
-        Assert.assertEquals( ac.getLiteral(1), root4.getChildren().get(0).getValue());
-        Assert.assertEquals( ac.getLiteral(2), root4.getChildren().get(1).getValue());
-        Assert.assertEquals( ac.getLiteral(5), root4.getChildren().get(2).getValue());
-        Assert.assertEquals( ac.getLiteral(6), root4.getChildren().get(3).getValue());
+        Node root4 = trees.get(4);
+        Assert.assertEquals(ac.getLiteral(4), root4.getValue());
+        Assert.assertEquals(4, root4.childrenSize());
+        Assert.assertEquals(ac.getLiteral(1), root4.getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root4.getChildren().get(1).getValue());
+        Assert.assertEquals(ac.getLiteral(5), root4.getChildren().get(2).getValue());
+        Assert.assertEquals(ac.getLiteral(6), root4.getChildren().get(3).getValue());
 
         Assert.assertEquals(ac.getLiteral(6), root4.getChildren().get(0).getChildren().get(0).getValue());
         Assert.assertEquals(ac.getLiteral(5), root4.getChildren().get(1).getChildren().get(0).getValue());
@@ -375,13 +355,13 @@ public class T {
         Assert.assertEquals(ac.getLiteral(1), root4.getChildren().get(3).getChildren().get(0).getValue());
 
 
-        Node root6 =  trees.get(5);
-        Assert.assertEquals( ac.getLiteral(6), root6.getValue());
-        Assert.assertEquals(4,root6.childrenSize());
-        Assert.assertEquals( ac.getLiteral(1), root6.getChildren().get(0).getValue());
-        Assert.assertEquals( ac.getLiteral(2), root6.getChildren().get(1).getValue());
-        Assert.assertEquals( ac.getLiteral(4), root6.getChildren().get(2).getValue());
-        Assert.assertEquals( ac.getLiteral(5), root6.getChildren().get(3).getValue());
+        Node root6 = trees.get(5);
+        Assert.assertEquals(ac.getLiteral(6), root6.getValue());
+        Assert.assertEquals(4, root6.childrenSize());
+        Assert.assertEquals(ac.getLiteral(1), root6.getChildren().get(0).getValue());
+        Assert.assertEquals(ac.getLiteral(2), root6.getChildren().get(1).getValue());
+        Assert.assertEquals(ac.getLiteral(4), root6.getChildren().get(2).getValue());
+        Assert.assertEquals(ac.getLiteral(5), root6.getChildren().get(3).getValue());
 
         Assert.assertEquals(ac.getLiteral(4), root6.getChildren().get(0).getChildren().get(0).getValue());
         Assert.assertEquals(ac.getLiteral(5), root6.getChildren().get(1).getChildren().get(0).getValue());
@@ -390,124 +370,135 @@ public class T {
     }
 
     @Test
-    public void testAllPrimeImplicants() throws CloneNotSupportedException {
+    public void testAllPrimeImplicants() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula05.cnf";
         Solver solver = new Solver(fileNameTest);
         List<Implicant> allImplicants = solver.getAllPrimeImplicants();
-        Debug.println(true,allImplicants);
-        Assert.assertEquals(3,allImplicants.size());
+        Debug.println(true, allImplicants);
+        Assert.assertEquals(3, allImplicants.size());
 
-        Implicant implicant1 =  allImplicants.get(0);
-        Implicant implicant2 =  allImplicants.get(1);
-        Implicant implicant3 =  allImplicants.get(2);
+        Implicant implicant1 = allImplicants.get(0);
+        Implicant implicant2 = allImplicants.get(1);
+        Implicant implicant3 = allImplicants.get(2);
 
-        int[] value1 = {1,3,2,4,9,-8};
+        int[] value1 = {1, 3, 2, 4, 9, -8};
         Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
 
-        int[] value2 = {1,3,2,4,9,-6,-10};
+        int[] value2 = {1, 3, 2, 4, 9, -6, -10};
         Assert.assertTrue(implicant2.containsAll(Util.toLiteralsList(value2)));
 
-        int[] value3 = {1,3,2,4,9,-7,-10};
+        int[] value3 = {1, 3, 2, 4, 9, -7, -10};
         Assert.assertTrue(implicant3.containsAll(Util.toLiteralsList(value3)));
 
     }
 
     @Test
-    public void testAllPrimeImplicants2() throws CloneNotSupportedException {
+    public void testAllPrimeImplicants2() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula07.cnf";
         Solver solver = new Solver(fileNameTest);
         Model model = ModelFactory.getModel(SolverEngine.EMPTY);
-        model.addLiterals(new int[]{1,2,3,4,5});
+        model.addLiterals(new int[]{1, 2, 3, 4, 5});
         List<Implicant> allImplicants = solver.getAllPrimeImplicants(model);
-        Debug.println(true,allImplicants);
+        Debug.println(true, allImplicants);
 
-        Assert.assertEquals(5,allImplicants.size());
+        Assert.assertEquals(5, allImplicants.size());
 
-        Implicant implicant1 =  allImplicants.get(0);
-        Implicant implicant2 =  allImplicants.get(1);
-        Implicant implicant3 =  allImplicants.get(2);
-        Implicant implicant4 =  allImplicants.get(3);
-        Implicant implicant5=  allImplicants.get(4);
+        Implicant implicant1 = allImplicants.get(0);
+        Implicant implicant2 = allImplicants.get(1);
+        Implicant implicant3 = allImplicants.get(2);
+        Implicant implicant4 = allImplicants.get(3);
+        Implicant implicant5 = allImplicants.get(4);
 
         int[] value1 = {1};
         Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
 
-        int[] value2 = {2,4};
+        int[] value2 = {2, 4};
         Assert.assertTrue(implicant2.containsAll(Util.toLiteralsList(value2)));
 
-        int[] value3 = {2,5};
+        int[] value3 = {2, 5};
         Assert.assertTrue(implicant3.containsAll(Util.toLiteralsList(value3)));
 
-        int[] value4 = {3,4};
+        int[] value4 = {3, 4};
         Assert.assertTrue(implicant4.containsAll(Util.toLiteralsList(value4)));
 
-        int[] value5 = {3,5};
+        int[] value5 = {3, 5};
         Assert.assertTrue(implicant5.containsAll(Util.toLiteralsList(value5)));
 
     }
 
     @Test
-    public void testAllPrimeImplicants3() throws CloneNotSupportedException {
+    public void testAllPrimeImplicants3() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula04.cnf";
         Solver solver = new Solver(fileNameTest);
-        Debug.println(true,solver.getModel());
+        Debug.println(true, solver.getModel());
         List<Implicant> allImplicants = solver.getAllPrimeImplicants();
-        Debug.println(true,allImplicants);
+        Debug.println(true, allImplicants);
 
-        Assert.assertEquals(1,allImplicants.size());
+        Assert.assertEquals(1, allImplicants.size());
 
-        Implicant implicant1 =  allImplicants.get(0);
-        int[] value1 = {-6,-3,-1,-2,-5,-9,-4};
+        Implicant implicant1 = allImplicants.get(0);
+        int[] value1 = {-6, -3, -1, -2, -5, -9, -4};
         Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
     }
 
     @Test
-    public void testAllPrimeImplicants4() throws CloneNotSupportedException {
+    public void testAllPrimeImplicants4() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula03.cnf";
         Solver solver = new Solver(fileNameTest);
-        Debug.println(true,solver.getModel());
+        Debug.println(true, solver.getModel());
         List<Implicant> allImplicants = solver.getAllPrimeImplicants();
-        Debug.println(true,allImplicants);
+        Debug.println(true, allImplicants);
 
-        Assert.assertEquals(1,allImplicants.size());
-        Implicant implicant1 =  allImplicants.get(0);
-        int[] value1 = {1,2,4};
+        Assert.assertEquals(1, allImplicants.size());
+        Implicant implicant1 = allImplicants.get(0);
+        int[] value1 = {1, 2, 4};
         Assert.assertTrue(implicant1.containsAll(Util.toLiteralsList(value1)));
     }
-
-    @Test
-    public void testPrimeImplicantCover() throws CloneNotSupportedException {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula03.cnf";
-        Solver solver = new Solver(fileNameTest);
-        solver.primeImplicantCover();
-    }
+//
+//    @Test
+//    public void testSatWithAssignment() {
+//        this.ac.reset();
+//        final String fileNameTest = SATPATH + "formula07.cnf";
+//        Solver solver = new Solver(fileNameTest);
+//        int[][] assumptions = new int[5][];
+//        assumptions[0] = new int[]{1, -2, -3, -4, -5};
+//        assumptions[1] = new int[]{-1, 2, -3, 4, -5};
+//        assumptions[2] = new int[]{-1, 2, -3, -4, 5};
+//        assumptions[3] = new int[]{-1, -2, 3, 4, -5};
+//        assumptions[4] = new int[]{-1, -2, 3, -4, 5};
+//        Assert.assertTrue(solver.sat(Util.toLiteralsList(assumptions[0])));
+//        Assert.assertTrue(solver.sat(Util.toLiteralsList(assumptions[1])));
+//        Assert.assertTrue(solver.sat(Util.toLiteralsList(assumptions[2])));
+//        Assert.assertTrue(solver.sat(Util.toLiteralsList(assumptions[3])));
+//        Assert.assertTrue(solver.sat(Util.toLiteralsList(assumptions[4])));
+//    }
 
 
     /**
      * Test if each clause contains at least one pi literal.
+     *
      * @param cs Clause set
      * @param pi prime implicant
      * @return True if it contains, otherwise false
      */
-    private boolean containAtLeastOnePiLiteral(ClauseSet cs, Implicant pi){
-        if(cs.isEmpty() || pi.isEmpty()) return false;
+    private boolean containAtLeastOnePiLiteral(ClauseSet cs, Implicant pi) {
+        if (cs.isEmpty() || pi.isEmpty()) return false;
 
-        for(int j = 0 ; j < cs.getClauses().size(); j++){
+        for (int j = 0; j < cs.getClauses().size(); j++) {
             Clause clause = cs.get(j);
             // does each clause contains at least one pi literal.
             boolean r = false;
-            for(int i = 0 ; i < clause.getLiterals().size();i++){
-                if(pi.contains(clause.get(i))) {
+            for (int i = 0; i < clause.getLiterals().size(); i++) {
+                if (pi.contains(clause.get(i))) {
                     r = true;
                     break;
                 }
             }
-            if(!r){
+            if (!r) {
                 return false;
             }
         }
@@ -519,22 +510,19 @@ public class T {
      * Test if the given implicant is an prime implicant. We iteratively remove one literal from the given
      * implicant, test if each clause contains at least one pi literal. If it returns true, then the implicant is not a
      * prime implicant, otherwise the implicant is a prime implicant
+     *
      * @param cs Clause set
      * @param pi Implicant
      * @return
      */
-    private boolean testRemoveOneLiteralFromPI(ClauseSet cs, Implicant pi){
-        try {
-            Implicant clone;
-            for (masterthesis.base.Literal literal : pi.getLiterals()) {
-                clone = (Implicant) pi.clone();
-                clone.removeLiteral(literal);
-                if(containAtLeastOnePiLiteral(cs,clone)){
-                    return false;
-                }
+    private boolean testRemoveOneLiteralFromPI(ClauseSet cs, Implicant pi) {
+        Implicant clone;
+        for (Literal literal : pi.getLiterals()) {
+            clone = new Implicant(pi);
+            clone.removeLiteral(literal);
+            if (containAtLeastOnePiLiteral(cs, clone)) {
+                return false;
             }
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
         }
         return true;
     }

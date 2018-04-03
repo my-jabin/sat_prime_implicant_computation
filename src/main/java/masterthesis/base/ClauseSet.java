@@ -11,6 +11,10 @@ public class ClauseSet{
         clauses = new ArrayList<>();
     }
 
+    public ClauseSet(ClauseSet clauseSet){
+        this.clauses = new ArrayList<>(clauseSet.getClauses());
+    }
+
     public void init(){
         if(ac.getCNFContent().isEmpty()){
             System.out.println("content is empty, cannot obtain clause set");
@@ -58,4 +62,12 @@ public class ClauseSet{
         return this.clauses.get(index);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Clause clause: this.clauses){
+            sb.append(clause.toPrettyString()).append("\n");
+        }
+        return sb.toString();
+    }
 }

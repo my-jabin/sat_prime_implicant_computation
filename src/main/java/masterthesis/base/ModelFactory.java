@@ -13,29 +13,37 @@ import java.util.List;
 public class ModelFactory {
 
     public static Model getModel(SolverEngine engine) {
+        return getModel(engine,null);
+    }
+
+    public static Model getModel(SolverEngine engine, ClauseSet cs) {
         switch (engine) {
             case EMPTY:
                 return new CustomModel();
             case SAT4J:
-                return new Sat4jModel();
+                if(cs == null || cs.isEmpty())
+                    throw new IllegalArgumentException("Clause set must not empty");
+                return new Sat4jModel(cs);
             case LOGICNG:
-                return new LogicNGModel();
+                if(cs == null || cs.isEmpty())
+                    throw new IllegalArgumentException("Clause set must not empty");
+                return new LogicNGModel(cs);
             default:
                 throw new IllegalArgumentException("Must specify model engine");
         }
     }
 
-    public static List<Model> getAllModels(SolverEngine engine){
+    public static List<Model> getAllModels(SolverEngine engine, ClauseSet cs){
         List<Model> models = new ArrayList<>();
         switch (engine) {
             case SAT4J:
-                return getAllSat4jModels();
+                return getAllSat4jModels(cs);
             default:
                 return null;
         }
     }
 
-    private static List<Model> getAllSat4jModels(){
+    private static List<Model> getAllSat4jModels(ClauseSet cs){
         int MAXVAR = 1000000;
         ISolver solver = SolverFactory.newDefault();
         solver.setTimeout(3600); // 1 hour timeout
@@ -44,17 +52,25 @@ public class ModelFactory {
         ISolver mi = new ModelIterator(solver);
         final ApplicationContext ac = ApplicationContext.getInstance();
         try {
-            for (ArrayList<Integer> line : ac.getCNFContent()) {
-                int[] literals = new int[line.size()];
-                for (int i = 0; i < line.size(); i++) {
-                    literals[i] = line.get(i);
+//            for (ArrayList<Integer> line : ac.getCNFContent()) {
+//                int[] literals = new int[line.size()];
+//                for (int i = 0; i < line.size(); i++) {
+//                    literals[i] = line.get(i);
+//                }
+//                solver.addClause(new VecInt(literals));
+//            }
+
+            for (Clause clause : cs.getClauses()) {
+                int[] literals = new int[clause.size()];
+                for (int i = 0; i < clause.size(); i++) {
+                    literals[i] = clause.get(i).getValue();
                 }
                 solver.addClause(new VecInt(literals));
             }
 
             Model model = null;
             while (mi.isSatisfiable()) {
-                model = new Sat4jModel();
+                model = new Sat4jModel(cs);
                 for (int i : mi.model()) {
                     model.addLiteral(ac.getLiteral(i));
                 }
