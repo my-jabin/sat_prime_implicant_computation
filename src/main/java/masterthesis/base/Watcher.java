@@ -16,14 +16,24 @@ public class Watcher {
         status = Status.DEFAULT;
     }
 
-    public void initWatchedIndex(final Implicant primeImplicant, final Map<Literal, ArrayList<Watcher>> watchedList) {
+    public void initWatchedIndex(final Implicant primeImplicant, final Map<Literal, ArrayList<Watcher>> watchedList, Implicant implicant) {
         if (clause.isEmpyt()) return;
 
         if (clause.size() > 1) {
-            watchedIndex1 = 0;
-            watchedIndex2 = 1;
-            watchedList.computeIfAbsent(clause.get(0), k -> new ArrayList<>()).add(this);
-            watchedList.computeIfAbsent(clause.get(1), k -> new ArrayList<>()).add(this);
+            watchedIndex1 = selectWatchedindex(implicant, 0);
+            if (watchedIndex1 == -1) {
+                throw new IllegalArgumentException("Cannot initialize watched literal ");
+            }
+            watchedList.computeIfAbsent(clause.get(watchedIndex1), k -> new ArrayList<>()).add(this);
+
+            watchedIndex2 = selectWatchedindex(implicant, watchedIndex1 + 1);
+            // if not found the second satisfied literal, we need to add the first to pi
+            if (watchedIndex2 == -1) {
+                primeImplicant.addLiteral(clause.get(watchedIndex1));
+                clause.setState(Clause.STATE.PRIME);
+            } else {
+                watchedList.computeIfAbsent(clause.get(watchedIndex2), k -> new ArrayList<>()).add(this);
+            }
         } else {
             watchedIndex1 = 0;
             primeImplicant.addLiteral(clause.get(0));
@@ -31,10 +41,21 @@ public class Watcher {
         }
     }
 
-    public Literal getNextSatisfiedLiteral(Model model) {
+    public int selectWatchedindex(Implicant implicant, int index) {
+        int result = -1;
+        for (int from = index; from < this.clause.size(); from++) {
+            if (implicant.containsVariable(this.clause.get(from).getValue())) {
+                result = from;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public Literal getNextSatisfiedLiteral(Implicant implicant) {
         Literal rotatable = null;
         for (int from = watchedIndex1 > watchedIndex2 ? watchedIndex1 + 1 : watchedIndex2 + 1; from < this.clause.size(); from++) {
-            if (model.contains(this.clause.get(from))) {
+            if (implicant.contains(this.clause.get(from))) {
                 rotatable = this.clause.get(from);
                 break;
             }

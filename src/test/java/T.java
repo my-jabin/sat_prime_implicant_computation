@@ -2,7 +2,6 @@
 import masterthesis.base.*;
 import masterthesis.utils.Debug;
 import masterthesis.utils.Sat4jTool;
-import masterthesis.utils.Util;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class T {
-
     private static final String SATPATH = "src/main/resources/sat/";
     private static final String UNSATPATH = "src/main/resources/unsat/";
     private ApplicationContext ac;
@@ -33,7 +31,6 @@ public class T {
         Solver solver = new Solver(fileNameTest);
         Assert.assertTrue(!solver.sat());
     }
-
 
     @Test
     public void testCase2() {
@@ -278,6 +275,135 @@ public class T {
 
         Assert.assertNotEquals(originalPI, customPI);
     }
+
+    @Test
+    public void testAllPrimeImplicantUnderImplicant() {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula05.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Model model = ModelFactory.getModel(SolverEngine.EMPTY);
+        model.addLiterals(new int[]{1, 2, 3, 4, -5, -6, 7, -8, -9, 10, -11});
+        Assert.assertTrue(solver.sat());
+        Implicant pi = solver.getPrimeImplicant(model);
+        Debug.println(true, pi.toPrettyString());
+
+        Assert.assertTrue(pi.containsAll(Util.toLiteralsList(new int[]{1, 2, 3, 4, -5, -6, 7, -8, -11})));
+
+        List<Implicant> allPi = solver.getAllPrimeImplicants(model);
+        Assert.assertEquals(1, allPi.size());
+        Assert.assertTrue(allPi.get(0).containsAll(Util.toLiteralsList(new int[]{1, 2, 3, 4, -5, -6, 7, -8, -11})));
+
+    }
+
+    @Test
+    public void testPrimeImplicantUnderImplicant5() {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula05.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Implicant implicant = new Implicant();
+//        implicant.addLiterals(new int[]{1,2,3,4,-5,-6,7,8,-10,-11});
+        implicant.addLiterals(new int[]{1, 2, 3, 4, -5, 6, -7, -8, -9, 10, 11});
+        Implicant pi = solver.getPrimeImplicant(implicant);
+        Debug.println(true, pi.toPrettyString());
+
+    }
+
+    @Test
+    public void testPrimeImplicantUnderImplicant7() {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula07.cnf";
+        Solver solver = new Solver(fileNameTest);
+
+        Implicant[] implicants = new Implicant[5];
+
+        implicants[0] = new Implicant();
+        implicants[0].addLiterals(new int[]{-1, 2, -3, 4, -5});
+        Implicant pi0 = solver.getPrimeImplicant(implicants[0]);
+        Assert.assertEquals(2, pi0.size());
+        Assert.assertTrue(pi0.contains(ac.getLiteral(2)));
+        Assert.assertTrue(pi0.contains(ac.getLiteral(4)));
+
+
+        implicants[1] = new Implicant();
+        implicants[1].addLiterals(new int[]{-1, 2, -3, -4, 5});
+        Implicant pi1 = solver.getPrimeImplicant(implicants[1]);
+        Assert.assertEquals(2, pi1.size());
+        Assert.assertTrue(pi1.contains(ac.getLiteral(2)));
+        Assert.assertTrue(pi1.contains(ac.getLiteral(5)));
+
+
+        implicants[2] = new Implicant();
+        implicants[2].addLiterals(new int[]{-1, -2, 3, -4, 5});
+        Implicant pi2 = solver.getPrimeImplicant(implicants[2]);
+        Assert.assertEquals(2, pi2.size());
+        Assert.assertTrue(pi2.contains(ac.getLiteral(3)));
+        Assert.assertTrue(pi2.contains(ac.getLiteral(5)));
+
+
+        implicants[3] = new Implicant();
+        implicants[3].addLiterals(new int[]{-1, -2, 3, 4, -5});
+        Implicant pi3 = solver.getPrimeImplicant(implicants[3]);
+        Assert.assertEquals(2, pi3.size());
+        Assert.assertTrue(pi3.contains(ac.getLiteral(3)));
+        Assert.assertTrue(pi3.contains(ac.getLiteral(4)));
+
+
+        implicants[4] = new Implicant();
+        implicants[4].addLiterals(new int[]{1, 2, 3, -4, -5});
+        Implicant pi4 = solver.getPrimeImplicant(implicants[4]);
+        Assert.assertEquals(1, pi4.size());
+        Assert.assertTrue(pi4.contains(ac.getLiteral(1)));
+    }
+
+    @Test
+    public void testPrimeImplicantCover7() {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula07.cnf";
+        Set<Implicant> implicantSet = Problem.primeImplicantCover(fileNameTest);
+        Assert.assertNotNull(implicantSet);
+
+        ArrayList<Implicant> implicants = new ArrayList<>(implicantSet);
+        Assert.assertEquals(5, implicants.size());
+
+        Implicant[] implicantArray = new Implicant[5];
+        implicantArray[0] = new Implicant(new int[]{1});
+        implicantArray[1] = new Implicant(new int[]{2, 4});
+        implicantArray[2] = new Implicant(new int[]{2, 5});
+        implicantArray[3] = new Implicant(new int[]{3, 4});
+        implicantArray[4] = new Implicant(new int[]{3, 5});
+
+        for (int i = 0; i < implicantArray.length; i++) {
+            Assert.assertTrue(implicants.contains(implicantArray[i]));
+        }
+        // TODO: makes more test case of the prime implicant cover
+    }
+
+    @Test
+    public void testPrimeImplicantCover5() {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula05.cnf";
+        Set<Implicant> implicantSet = Problem.primeImplicantCover(fileNameTest);
+        Assert.assertNotNull(implicantSet);
+
+        for (Implicant i : implicantSet) {
+            Debug.println(true, i.toPrettyString());
+        }
+
+//        ArrayList<Implicant> implicants = new ArrayList<>(implicantSet);
+//        Assert.assertEquals(5,implicants.size());
+//
+//        Implicant[] implicantArray = new Implicant[5];
+//        implicantArray[0] = new Implicant(new int[]{1});
+//        implicantArray[1] = new Implicant(new int[]{2,4});
+//        implicantArray[2] = new Implicant(new int[]{2,5});
+//        implicantArray[3] = new Implicant(new int[]{3,4});
+//        implicantArray[4] = new Implicant(new int[]{3,5});
+//
+//        for(int i = 0 ; i < implicantArray.length;i++){
+//            Assert.assertTrue(implicants.contains( implicantArray[i]));
+//        }
+    }
+
 
     @Test
     public void testBuildTree() {

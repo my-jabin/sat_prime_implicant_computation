@@ -2,7 +2,6 @@ package masterthesis.base;
 
 import masterthesis.utils.Debug;
 import masterthesis.utils.DimacsFormatReader;
-import masterthesis.utils.LogicNGTool;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,13 +46,13 @@ public class Solver {
         reset();
     }
 
-    private void initWatchesAndSubset(final Implicant primeImplicant, final Model model) {
-        if (model.isEmpty()) {
-            throw new IllegalArgumentException("Must specify non empty defaultModel");
+    private void initWatchesAndSubset(final Implicant primeImplicant, final Implicant implicant) {
+        if (implicant.isEmpty()) {
+            throw new IllegalArgumentException("Must specify non-empty implicant");
         }
         clauseSet.getClauses().stream().forEach(c -> {
             final Watcher watcher = new Watcher(c);
-            watcher.initWatchedIndex(primeImplicant, watchedList);
+            watcher.initWatchedIndex(primeImplicant, watchedList, implicant);
         });
         primeImplicant.getLiterals().stream().forEach(l -> {
             watchedList.computeIfAbsent(l, k -> new ArrayList<>()).stream()
@@ -64,35 +63,33 @@ public class Solver {
 
         // prime Unit propagation
         Debug.println(false, "First of all, add unit literals to PI", primeImplicant);
-        primeUnitPropagation(primeImplicant, model);
+        primeUnitPropagation(primeImplicant, implicant);
     }
 
-    private void primeUnitPropagation(final Implicant primeImplicant, final Model model) {
+    private void primeUnitPropagation(final Implicant primeImplicant, final Implicant implicant) {
         Implicant uppi = new Implicant(primeImplicant);
         do {
             uppi.getLiterals().forEach(l -> watchedList.getOrDefault(l, new ArrayList<>()).clear());
             primeImplicant.addLiterals(uppi.getLiterals());
-//            Implicant tempPI = (Implicant) uppi.clone();
             Implicant tempPI = new Implicant(uppi);
             uppi.clear();
             tempPI.getLiterals().forEach(l -> {
-                this.unwatchAndPropagate(l.getComplementary(), uppi, model);
+                this.unwatchAndPropagate(l.getComplementary(), uppi, implicant);
             });
         } while (!uppi.isEmpty());
     }
 
-    private void primeByWatches(final Implicant primeImplicant, final Model model) {
+    private void primeByWatches(final Implicant primeImplicant, final Implicant implicant) {
         Debug.println(false, primeImplicant);
-        if (model.isEmpty()) {
-            throw new IllegalArgumentException("Must specify a non empty defaultModel");
+        if (implicant.isEmpty()) {
+            throw new IllegalArgumentException("Must specify a non-empty implicant");
         }
-        model.getLiterals().stream()
+        implicant.getLiterals().stream()
                 .filter(l -> !primeImplicant.contains(l))
                 .collect(Collectors.toList())
                 .forEach(l -> {
-                    Debug.println(false, l);
                     //remove -l from watched list in all clauses
-                    unwatchAndPropagate(l.getComplementary(), primeImplicant, model);
+                    unwatchAndPropagate(l.getComplementary(), primeImplicant, implicant);
                 });
         Debug.println(false, watchedList);
         Debug.println(false, "After first UWAP", primeImplicant);
@@ -100,7 +97,8 @@ public class Solver {
         // 现在所有状态为DEFAULT（既非success）的clause的watch index都指向satisfiable literal( could also points to an prime literal)
         // 这时候可以进行第二次UWAP，既：随机剔除一个literal
         try {
-            Model m = (Model) model.clone();
+            //Model m = (Model) implicant.clone();
+            Implicant m = new Implicant(implicant);
             while (true) {
                 // randomly pick a literal up, here I pick the first literal up.
                 Optional<Literal> o = m.getLiterals().stream().filter(l -> !primeImplicant.contains(l)).findFirst();
@@ -112,18 +110,18 @@ public class Solver {
 
             Debug.println(false, watchedList);
             Debug.println(false, "After second UWAP", primeImplicant);
-        } catch (CloneNotSupportedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    private void unwatchAndPropagate(final Literal l, final Implicant pi, final Model m) {
+    private void unwatchAndPropagate(final Literal l, final Implicant pi, final Implicant implicant) {
         Debug.println(false, l);
         watchedList.computeIfAbsent(l, k -> new ArrayList<>()).stream()
                 .filter(w -> w.getStatus() != Watcher.Status.SUCCESS)
                 .forEach(w -> {
-                    Literal satisfied = w.getNextSatisfiedLiteral(m);
+                    Literal satisfied = w.getNextSatisfiedLiteral(implicant);
                     if (satisfied == null) {
                         // add the other literal into Pi;
                         final Literal other = w.getOtherWatchedLiteral(l);
@@ -182,26 +180,26 @@ public class Solver {
     }
 
     /**
-     * Compute a prime implicant under a specified model
+     * Compute a prime implicant under a specified implicant
      *
      * @param pi Prime implicant reference
-     * @param model Specified Model
+     * @param implicant Specified implicant
      */
-    private void computePI(Implicant pi, Model model) {
+    private void computePI(Implicant pi, Implicant implicant) {
         watchedList.clear();
-        initWatchesAndSubset(pi, model);
-        primeByWatches(pi, model);
+        initWatchesAndSubset(pi, implicant);
+        primeByWatches(pi, implicant);
     }
 
     /**
-     * Compute a prime implicant under the specified model
+     * Compute a prime implicant under the specified implicant
      *
-     * @param model specified model
+     * @param implicant specified implicant
      * @return Prime implicant
      */
-    public Implicant getPrimeImplicant(Model model) {
+    public Implicant getPrimeImplicant(Implicant implicant) {
         Implicant pi = new Implicant();
-        computePI(pi, model);
+        computePI(pi, implicant);
         return pi;
     }
 
@@ -270,8 +268,8 @@ public class Solver {
         }
 
         // Step 5: Deeply search the tree, generate the subset of prime implicant
-        Debug.println(true, "Trees size = " + trees.size());
-        Debug.println(true, "Weights size = " + weight.size());
+        Debug.println(false, "Trees size = " + trees.size());
+        Debug.println(false, "Weights size = " + weight.size());
 
         // each implicant is an subset of a prime implicant
         List<Implicant> subsets = new ArrayList<>();
@@ -281,8 +279,6 @@ public class Solver {
         }
 
         // Step 6: combine the base implicant with the subset to generate all prime implicants
-
-
         subsets.forEach(implicant -> {
             Implicant i = new Implicant();
             i.addLiterals(baseImplicant.getLiterals());

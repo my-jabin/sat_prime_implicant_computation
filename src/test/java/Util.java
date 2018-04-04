@@ -1,4 +1,3 @@
-package masterthesis.utils;
 
 import masterthesis.base.ApplicationContext;
 import masterthesis.base.Literal;

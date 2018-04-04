@@ -1,7 +1,7 @@
 package masterthesis.main;
 
 import masterthesis.base.*;
-import masterthesis.utils.*;
+import masterthesis.utils.Debug;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.FormulaFactory;
 import org.logicng.formulas.Literal;
@@ -10,7 +10,6 @@ import org.logicng.solvers.SATSolver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.PriorityBlockingQueue;
 
 public class Main {
 
@@ -21,15 +20,15 @@ public class Main {
 
 
     public static void main(String[] args) throws CloneNotSupportedException {
-        mainMethod();
+        //mainMethod();
 //        testGenOneModelFrom4J();
         //testGenModelsFrom4J();
         //testPISat4j();
 
-//        testProblem();
+        testProblem();
         //testAssignmentSat();
-
     }
+
 
     private static void testProblem(){
         Problem.primeImplicantCover(fileNameTest);
@@ -69,7 +68,7 @@ public class Main {
     private static void mainMethod() {
         Solver solver = new Solver(fileNameTest);
         Model model = ModelFactory.getModel(SolverEngine.EMPTY);
-        model.addLiterals(new int[]{2,-3,-4,5});
+        model.addLiterals(new int[]{2, -3, 4, -5});
         if (solver.sat()) {
             Implicant pi = solver.getPrimeImplicant(model);
             Debug.println(true, pi);

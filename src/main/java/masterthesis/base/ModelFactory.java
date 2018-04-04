@@ -34,7 +34,6 @@ public class ModelFactory {
     }
 
     public static List<Model> getAllModels(SolverEngine engine, ClauseSet cs){
-        List<Model> models = new ArrayList<>();
         switch (engine) {
             case SAT4J:
                 return getAllSat4jModels(cs);
@@ -52,14 +51,6 @@ public class ModelFactory {
         ISolver mi = new ModelIterator(solver);
         final ApplicationContext ac = ApplicationContext.getInstance();
         try {
-//            for (ArrayList<Integer> line : ac.getCNFContent()) {
-//                int[] literals = new int[line.size()];
-//                for (int i = 0; i < line.size(); i++) {
-//                    literals[i] = line.get(i);
-//                }
-//                solver.addClause(new VecInt(literals));
-//            }
-
             for (Clause clause : cs.getClauses()) {
                 int[] literals = new int[clause.size()];
                 for (int i = 0; i < clause.size(); i++) {

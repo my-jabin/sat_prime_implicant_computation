@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class Implicant{
 
-    private LinkedHashSet<Literal> literals;
+    protected LinkedHashSet<Literal> literals;
     private ApplicationContext ac = ApplicationContext.getInstance();
 
     public Implicant() {
@@ -38,12 +38,20 @@ public class Implicant{
         return this.literals.contains(l);
     }
 
+    public boolean containsVariable(int var) {
+        return contains(ac.getLiteral(var)) || contains(ac.getLiteral(-var));
+    }
+
     public void addLiteral(Literal l){
         this.literals.add(l);
     }
 
     public void addLiterals(Collection<Literal> list){
         this.literals.addAll(list);
+    }
+
+    public void addLiterals(int[] literals) {
+        addLiterals(Arrays.stream(literals).mapToObj(ac::getLiteral).collect(Collectors.toList()));
     }
 
 
@@ -86,8 +94,11 @@ public class Implicant{
 
     @Override
     public String toString() {
+        if (isEmpty()) {
+            return getClass().getSimpleName() + ":NULL";
+        }
         StringBuilder sb = new StringBuilder();
-        sb.append("Implicant(").append(this.literals.size()).append("): (");
+        sb.append(getClass().getSimpleName()).append("(").append(this.literals.size()).append("): (");
         this.literals.forEach( l -> sb.append(l.toString()).append(" "));
         sb.deleteCharAt(sb.lastIndexOf(" "));
         sb.append(")");
@@ -96,7 +107,7 @@ public class Implicant{
 
     public String toPrettyString(){
         StringBuilder sb = new StringBuilder();
-        sb.append("Implicant(").append(this.literals.size()).append("): (");
+        sb.append(getClass().getSimpleName()).append("(").append(this.literals.size()).append("): (");
         for (Literal literal : this.literals.stream().sorted().collect(Collectors.toList())) {
             sb.append(literal.toString()).append(" ");
         }

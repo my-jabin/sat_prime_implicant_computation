@@ -23,7 +23,6 @@ public class LogicNGTool {
         return factory.literal(var, i > 0);
     }
 
-
     private static void initSolver(ClauseSet cs) {
         final ArrayList<Literal> literals = new ArrayList<>();
         cs.getClauses().forEach(clause -> {
@@ -53,8 +52,6 @@ public class LogicNGTool {
                 boolean polarity = l.phase();
                 model[index++] = polarity ? value : -value;
             }
-        } else {
-            System.err.println("Could not find a model");
         }
         return model;
     }
