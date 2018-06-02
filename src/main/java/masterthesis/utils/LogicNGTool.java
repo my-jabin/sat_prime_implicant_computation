@@ -9,7 +9,6 @@ import org.logicng.solvers.SATSolver;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.SortedSet;
 
 public class LogicNGTool {
@@ -18,10 +17,10 @@ public class LogicNGTool {
     private static final SATSolver solver = MiniSat.miniSat(factory);
     private static final String PREFIX = "v";
 
-    public static Literal literal(int i){
-        String var = PREFIX + Math.abs(i);
-        return factory.literal(var, i > 0);
-    }
+//    public static Literal literal(int i){
+//        String var = PREFIX + Math.abs(i);
+//        return factory.literal(var, i > 0);
+//    }
 
     private static void initSolver(ClauseSet cs) {
         final ArrayList<Literal> literals = new ArrayList<>();
@@ -36,6 +35,12 @@ public class LogicNGTool {
             }
         });
     }
+
+//    public static boolean sat(ClauseSet cs){
+//        solver.reset();
+//        initSolver(cs);
+//        return solver.sat() == Tristate.TRUE;
+//    }
 
     public static int[] model(ClauseSet cs) {
         int[] model = null;
@@ -56,14 +61,14 @@ public class LogicNGTool {
         return model;
     }
 
-    public static boolean sat(ClauseSet cs, List<Literal> literals) {
-        solver.reset();
-        initSolver(cs);
-        List<Literal> assumption = new ArrayList<>();
-        for (Literal l : literals) {
-            assumption.add(factory.literal(l.name(), l.phase()));
-        }
-        Tristate result = solver.sat(assumption);
-        return result == Tristate.TRUE;
-    }
+//    public static boolean sat(ClauseSet cs, List<Literal> literals) {
+//        solver.reset();
+//        initSolver(cs);
+//        List<Literal> assumption = new ArrayList<>();
+//        for (Literal l : literals) {
+//            assumption.add(factory.literal(l.name(), l.phase()));
+//        }
+//        Tristate result = solver.sat(assumption);
+//        return result == Tristate.TRUE;
+//    }
 }

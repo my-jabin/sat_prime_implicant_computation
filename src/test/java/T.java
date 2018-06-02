@@ -4,6 +4,7 @@ import masterthesis.utils.Debug;
 import masterthesis.utils.Sat4jTool;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 
 public class T {
     private static final String SATPATH = "src/main/resources/sat/";
+    private static final String BACKBONEPATH = "src/main/resources/backbone/";
     private static final String UNSATPATH = "src/main/resources/unsat/";
     private ApplicationContext ac;
 
@@ -25,208 +27,21 @@ public class T {
     }
 
     @Test
-    public void testCase1() {
-        this.ac.reset();
-        final String fileNameTest = UNSATPATH + "formula01.cnf";
-        Solver solver = new Solver(fileNameTest);
-        Assert.assertTrue(!solver.sat());
-    }
-
-    @Test
-    public void testCase2() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula02.cnf";
-        Solver solver = new Solver(fileNameTest);
-        final Model model = solver.getModel();
-
-        Assert.assertTrue(!model.isEmpty());
-        Assert.assertTrue(model.contains(ac.getLiteral(1)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-2)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-3)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-4)));
-        Assert.assertTrue(model.contains(ac.getLiteral(5)));
-
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(5, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(1)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-2)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(5)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-4)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-3)));
-    }
-
-    @Test
-    public void testCase3() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula03.cnf";
-        Solver solver = new Solver(fileNameTest);
-        final Model model = solver.getModel();
-
-        Assert.assertEquals(4, model.size());
-        Assert.assertTrue(model.contains(ac.getLiteral(1)));
-        Assert.assertTrue(model.contains(ac.getLiteral(2)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-3)));
-        Assert.assertTrue(model.contains(ac.getLiteral(4)));
-
-
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(3, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(1)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(4)));
-    }
-
-    @Test
-    public void testCase4() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula04.cnf";
-        Solver solver = new Solver(fileNameTest);
-        final Model model = solver.getModel();
-
-        Assert.assertEquals(9, model.size());
-        Assert.assertTrue(model.contains(ac.getLiteral(-1)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-2)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-3)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-4)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-5)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-6)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-7)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-8)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-9)));
-
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(7, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-6)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-3)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-1)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-2)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-5)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-9)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-6)));
-    }
-
-    @Test
-    public void testCase5() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula05.cnf";
-        Solver solver = new Solver(fileNameTest);
-        final Model model = solver.getModel();
-        Assert.assertEquals(11, model.size());
-        Assert.assertTrue(model.contains(ac.getLiteral(1)));
-        Assert.assertTrue(model.contains(ac.getLiteral(2)));
-        Assert.assertTrue(model.contains(ac.getLiteral(3)));
-        Assert.assertTrue(model.contains(ac.getLiteral(4)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-5)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-6)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-7)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-8)));
-        Assert.assertTrue(model.contains(ac.getLiteral(9)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-10)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-11)));
-
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(6, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(1)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(3)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(4)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(9)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-8)));
-    }
-
-    @Test
-    public void testCase6() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula06.cnf";
-        Solver solver = new Solver(fileNameTest);
-        final Model model = solver.getModel();
-        Assert.assertEquals(20, model.size());
-        Assert.assertTrue(model.contains(ac.getLiteral(-1)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-10)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-11)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-12)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-13)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-14)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-15)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-16)));
-        Assert.assertTrue(model.contains(ac.getLiteral(17)));
-        Assert.assertTrue(model.contains(ac.getLiteral(18)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-19)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-2)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-20)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-3)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-4)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-5)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-6)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-7)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-8)));
-        Assert.assertTrue(model.contains(ac.getLiteral(-9)));
-
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(11, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-16)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-3)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-10)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-20)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(18)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-9)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-6)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(17)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-19)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-8)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(-15)));
-    }
-
-    @Test
-    public void testCase7() {
+    public void testClauseEquals() {
         this.ac.reset();
         final String fileNameTest = SATPATH + "formula07.cnf";
-        int[] literals = new int[]{1, 2, 4, 5};
         Solver solver = new Solver(fileNameTest);
-        solver.setEngine(SolverEngine.EMPTY);
+        ClauseSet cs = solver.getClauseSet();
+        ArrayList<Literal> literals = new ArrayList<>();
+        literals.add(this.ac.getLiteral(1));
+        literals.add(this.ac.getLiteral(2));
+        literals.add(this.ac.getLiteral(3));
+        Clause clause = new Clause(literals);
+        boolean contain = cs.getClauses().contains(clause);
+        System.out.println(contain);
 
-        final Model model = solver.getModel();
-        model.addLiterals(literals);
-        Assert.assertEquals(4, model.size());
-        Assert.assertTrue(model.contains(ac.getLiteral(1)));
-        Assert.assertTrue(model.contains(ac.getLiteral(2)));
-        Assert.assertTrue(model.contains(ac.getLiteral(4)));
-        Assert.assertTrue(model.contains(ac.getLiteral(5)));
-
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(2, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(5)));
-    }
-
-    @Test
-    public void testCase7And1() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "formula07.cnf";
-
-        Solver solver = new Solver(fileNameTest);
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        Assert.assertEquals(2, primeImplicant.size());
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(2)));
-        Assert.assertTrue(primeImplicant.contains(ac.getLiteral(4)));
-    }
-
-    @Test
-    public void testCase8() {
-        this.ac.reset();
-        final String fileNameTest = SATPATH + "D1119_M23.cnf";
-        Solver solver = new Solver(fileNameTest);
-        Assert.assertTrue(solver.sat());
-        Implicant primeImplicant = solver.getPrimeImplicant();
-        ClauseSet clauseSet = solver.getClauseSet();
-        Assert.assertTrue(testRemoveOneLiteralFromPI(clauseSet, primeImplicant));
+        boolean added = cs.addClause(clause);
+        System.out.println(added);
     }
 
     @Test
@@ -253,7 +68,7 @@ public class T {
             Assert.assertTrue(solver.sat());
             Implicant primeImplicant = solver.getPrimeImplicant();
             Implicant piFromSat4j = Sat4jTool.primeImplicant(solver.getClauseSet());
-            Debug.println(true, name, primeImplicant, piFromSat4j);
+            Debug.println(true, name, primeImplicant.toPrettyString(), piFromSat4j);
             Assert.assertEquals(piFromSat4j, primeImplicant);
         }
 
@@ -375,7 +190,6 @@ public class T {
         for (int i = 0; i < implicantArray.length; i++) {
             Assert.assertTrue(implicants.contains(implicantArray[i]));
         }
-        // TODO: makes more test case of the prime implicant cover
     }
 
     @Test
@@ -384,25 +198,50 @@ public class T {
         final String fileNameTest = SATPATH + "formula05.cnf";
         Set<Implicant> implicantSet = Problem.primeImplicantCover(fileNameTest);
         Assert.assertNotNull(implicantSet);
-
+        Debug.println(true, "size of all prime implicant cover = " + implicantSet.size());
         for (Implicant i : implicantSet) {
             Debug.println(true, i.toPrettyString());
         }
-
-//        ArrayList<Implicant> implicants = new ArrayList<>(implicantSet);
-//        Assert.assertEquals(5,implicants.size());
-//
-//        Implicant[] implicantArray = new Implicant[5];
-//        implicantArray[0] = new Implicant(new int[]{1});
-//        implicantArray[1] = new Implicant(new int[]{2,4});
-//        implicantArray[2] = new Implicant(new int[]{2,5});
-//        implicantArray[3] = new Implicant(new int[]{3,4});
-//        implicantArray[4] = new Implicant(new int[]{3,5});
-//
-//        for(int i = 0 ; i < implicantArray.length;i++){
-//            Assert.assertTrue(implicants.contains( implicantArray[i]));
-//        }
     }
+
+    @Test
+    @Ignore
+    public void testPrimeImplicantCover6() {
+        this.ac.reset();
+        final String fileNameTest = SATPATH + "formula06.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Set<Implicant> implicantSet = Problem.primeImplicantCover(fileNameTest);
+        Assert.assertNotNull(implicantSet);
+
+        //todo: why?
+        // clause set for type linkedHashSet
+//        new clause set size =3406
+//        size of all prime implicant = 1332
+
+        // clause set for type HashSet
+//        new clause set size =1882
+//        size of all prime implicant = 1080
+        Debug.println(true, "size of all prime implicant cover = " + implicantSet.size());
+        for (Implicant i : implicantSet) {
+            Assert.assertTrue(testRemoveOneLiteralFromPI(solver.getClauseSet(), i));
+            Debug.println(true, i.toPrettyString());
+        }
+
+    }
+
+    @Test
+    public void testGlobalUnitPropagation() {
+        this.ac.reset();
+//        final String fileNameTest = SATPATH + "formula02.cnf";
+//        final String fileNameTest = SATPATH + "dp02s02.shuffled.cnf";
+        final String fileNameTest = BACKBONEPATH + "b10/CBS_k3_n100_m449_b10_0.cnf";
+        Solver solver = new Solver(fileNameTest);
+        Set<Literal> literals = solver.getGlobalUnitPropagatedLiterals();
+        Debug.printPrettyString(true, literals);
+    }
+
+
+
 
 
     @Test
@@ -614,8 +453,9 @@ public class T {
     private boolean containAtLeastOnePiLiteral(ClauseSet cs, Implicant pi) {
         if (cs.isEmpty() || pi.isEmpty()) return false;
 
-        for (int j = 0; j < cs.getClauses().size(); j++) {
-            Clause clause = cs.get(j);
+//        for (int j = 0; j < cs.getClauses().size(); j++) {
+        for (Clause clause : cs.getClauses()) {
+//            Clause clause = cs.get(j);
             // does each clause contains at least one pi literal.
             boolean r = false;
             for (int i = 0; i < clause.getLiterals().size(); i++) {

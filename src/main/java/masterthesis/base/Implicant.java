@@ -6,19 +6,27 @@ import java.util.stream.Collectors;
 
 public class Implicant{
 
-    protected LinkedHashSet<Literal> literals;
+    //    protected LinkedHashSet<Literal> literals;
+    protected HashSet<Literal> literals;
     private ApplicationContext ac = ApplicationContext.getInstance();
 
     public Implicant() {
-        this.literals =  new LinkedHashSet<>();
+//        this.literals =  new LinkedHashSet<>();
+        this.literals = new HashSet<>();
+    }
+
+    public Implicant(Collection<Literal> collection) {
+        this.literals = new HashSet<>(collection);
     }
 
     public Implicant(Implicant implicant){
-        this.literals = new LinkedHashSet<>(implicant.getLiterals());
+//        this.literals = new LinkedHashSet<>(implicant.getLiterals());
+        this.literals = new HashSet<>(implicant.getLiterals());
     }
 
     public Implicant(int[] literals){
-        this.literals = new LinkedHashSet<>();
+//        this.literals = new LinkedHashSet<>();
+        this.literals = new HashSet<>();
         for(int i : literals){
             this.addLiteral(ac.getLiteral(i));
         }

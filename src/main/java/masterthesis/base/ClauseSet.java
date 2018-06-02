@@ -1,18 +1,18 @@
 package masterthesis.base;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 public class ClauseSet{
-
-    private ArrayList<Clause> clauses;
+    private HashSet<Clause> clauses;
     private final ApplicationContext ac = ApplicationContext.getInstance();
 
     public ClauseSet(){
-        clauses = new ArrayList<>();
+        clauses = new HashSet<>();
     }
 
     public ClauseSet(ClauseSet clauseSet){
-        this.clauses = new ArrayList<>(clauseSet.getClauses());
+        this.clauses = new HashSet<>(clauseSet.getClauses());
+//        ac.setClauseSet(clauseSet);
     }
 
     public void init(){
@@ -33,9 +33,10 @@ public class ClauseSet{
         }
     }
 
-    public void addClause(final Clause clause) {
+    public boolean addClause(final Clause clause) {
         if (clause != null)
-            this.clauses.add(clause);
+            return this.clauses.add(clause);
+        return false;
     }
 
     public boolean removeClause(final Clause clause){
@@ -50,7 +51,7 @@ public class ClauseSet{
         this.clauses.clear();
     }
 
-    public ArrayList<Clause> getClauses() {
+    public HashSet<Clause> getClauses() {
         return clauses;
     }
 
@@ -58,9 +59,9 @@ public class ClauseSet{
         return this.clauses.size();
     }
 
-    public Clause get(int index){
-        return this.clauses.get(index);
-    }
+//    public Clause get(int index){
+//        return this.clauses.get(index);
+//    }
 
     @Override
     public String toString() {

@@ -1,12 +1,9 @@
 package masterthesis.utils;
 
-import com.sun.org.apache.xpath.internal.SourceTree;
 import masterthesis.base.Literal;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Debug {
 
@@ -47,9 +44,9 @@ public class Debug {
 //        System.out.println(o1.toString() + o2.toString());
 //    }
 
-    public static void println(boolean on, Object... o){
-        if(!on || !PRINT) return;
-        Arrays.stream(o).forEach( oo -> System.out.println(oo.toString()));
+    public static void println(boolean on, Object... o) {
+        if (!on || !PRINT) return;
+        Arrays.stream(o).forEach(oo -> System.out.println(oo.toString()));
     }
 
     public static void printWeight(Map<Literal, Integer> weight) {
@@ -62,6 +59,23 @@ public class Debug {
             sb.deleteCharAt(sb.lastIndexOf(","));
         }
         Debug.println(true, sb.toString());
+    }
+
+    public static void printPrettyString(boolean on, Collection<Literal> collection) {
+        println(on, prettyString(collection));
+    }
+
+    public static String prettyString(Collection<Literal> collection) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(collection.getClass().getSimpleName()).append("(")
+                .append(collection.size())
+                .append("): (");
+        for (Literal literal : collection.stream().sorted().collect(Collectors.toList())) {
+            sb.append(literal.toString()).append(" ");
+        }
+        sb.deleteCharAt(sb.lastIndexOf(" "));
+        sb.append(")");
+        return sb.toString();
     }
 
 }

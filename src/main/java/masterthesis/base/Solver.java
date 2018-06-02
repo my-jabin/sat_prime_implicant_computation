@@ -15,6 +15,7 @@ public class Solver {
     private ClauseSet clauseSet;
     private Model defaultModel = null;
     private SolverEngine engine = SolverEngine.LOGICNG;
+    //    private SolverEngine engine = SolverEngine.SAT4J;
     private Implicant defaultPrimeImplicant;
     private Map<Literal, ArrayList<Watcher>> watchedList;
 
@@ -23,13 +24,20 @@ public class Solver {
         // application context and clause set won't be changed.
         this.ac = ApplicationContext.getInstance();
         this.clauseSet = new ClauseSet();
-        clauseSet.init();
+        this.clauseSet.init();
+//        this.clauseSet = ac.getClauseSet();
         reset();
     }
 
     public void setClauseSet(ClauseSet cs) {
         this.clauseSet = cs;
         reset();
+        // todo: any better way to reset the clause set?
+    }
+
+    public void addClause(Clause clause) {
+        this.clauseSet.addClause(clause);
+        // todo: add LogicNGTool to application context, to be singleton
     }
 
     private void reset() {
@@ -46,16 +54,22 @@ public class Solver {
         reset();
     }
 
+    /**
+     * initializing the watched literal on the first two literals who's variable appears in the implicant
+     *
+     * @param primeImplicant The prime implicant
+     * @param implicant      The implicant, specially case is a model
+     */
     private void initWatchesAndSubset(final Implicant primeImplicant, final Implicant implicant) {
         if (implicant.isEmpty()) {
             throw new IllegalArgumentException("Must specify non-empty implicant");
         }
-        clauseSet.getClauses().stream().forEach(c -> {
+        clauseSet.getClauses().forEach(c -> {
             final Watcher watcher = new Watcher(c);
             watcher.initWatchedIndex(primeImplicant, watchedList, implicant);
         });
-        primeImplicant.getLiterals().stream().forEach(l -> {
-            watchedList.computeIfAbsent(l, k -> new ArrayList<>()).stream()
+        primeImplicant.getLiterals().forEach(l -> {
+            watchedList.computeIfAbsent(l, k -> new ArrayList<>())
                     .forEach(w -> {
                         w.setStatus(Watcher.Status.SUCCESS);
                     });
@@ -73,17 +87,17 @@ public class Solver {
             primeImplicant.addLiterals(uppi.getLiterals());
             Implicant tempPI = new Implicant(uppi);
             uppi.clear();
-            tempPI.getLiterals().forEach(l -> {
-                this.unwatchAndPropagate(l.getComplementary(), uppi, implicant);
-            });
+            tempPI.getLiterals().forEach(l -> this.unwatchAndPropagate(l.getComplementary(), uppi, implicant));
         } while (!uppi.isEmpty());
     }
+
 
     private void primeByWatches(final Implicant primeImplicant, final Implicant implicant) {
         Debug.println(false, primeImplicant);
         if (implicant.isEmpty()) {
             throw new IllegalArgumentException("Must specify a non-empty implicant");
         }
+        // 1 UWAP
         implicant.getLiterals().stream()
                 .filter(l -> !primeImplicant.contains(l))
                 .collect(Collectors.toList())
@@ -146,29 +160,16 @@ public class Solver {
 
 
     public boolean sat() {
+//        if(this.engine == SolverEngine.LOGICNG){
+//            return LogicNGTool.sat(this.clauseSet);
+//        }else{
+//            return !getModel().isEmpty();
+//        }
         return !getModel().isEmpty();
     }
 
-//    /**
-//     * For a given set of literals, return True if the set of literals satisfied the formula(clause set).
-//     * Otherwise false.
-//     *
-//     * @param assumption Set of literals
-//     * @return The satisfiability of the formula.
-//     */
-//    public boolean sat(List<Literal> assumption) {
-//        //  all variables must be assigned.
-//        if (assumption.size() != ac.getVariablesCount())
-//            throw new IllegalArgumentException(" You have to assign a value to each variable.");
-//        List<org.logicng.formulas.Literal> list = new ArrayList<>();
-//        for (Literal l : assumption) {
-//            list.add(LogicNGTool.literal(l.toInteger()));
-//        }
-//        return LogicNGTool.sat(this.getClauseSet(), list);
-//    }
-
     /**
-     * Compute a prime implicant under the default defaultModel
+     * Compute a prime implicant under the default model
      *
      * @return Prime implicant
      */
@@ -182,7 +183,7 @@ public class Solver {
     /**
      * Compute a prime implicant under a specified implicant
      *
-     * @param pi Prime implicant reference
+     * @param pi        Prime implicant reference
      * @param implicant Specified implicant
      */
     private void computePI(Implicant pi, Implicant implicant) {
@@ -288,6 +289,125 @@ public class Solver {
 
         return allPI;
     }
+
+
+    public Set<Literal> getBackboneCandidate() {
+        this.watchedList.clear();
+        Implicant backbone = new Implicant();
+        Model model = getModel();
+        initWatchesAndSubset(backbone, model);
+        model.getLiterals().stream()
+                .filter(l -> !backbone.contains(l))
+                .collect(Collectors.toList())
+                .forEach(l -> {
+                    //remove -l from watched list in all clauses
+                    unwatchAndPropagate(l.getComplementary(), backbone, model);
+                });
+        Debug.println(false, "After first UWAP", backbone);
+        return backbone.getLiterals();
+    }
+
+
+    public Set<Literal> getGlobalUnitPropagatedLiterals() {
+        if (!sat()) {
+            throw new IllegalStateException("The formula is not satisfiable");
+        }
+        this.watchedList.clear();
+        // subset of backbone. is empty at first.
+        HashSet<Literal> backbone = new HashSet<>();
+        clauseSet.getClauses().forEach(c -> {
+            final Watcher watcher = new Watcher(c);
+            watcher.initGlobalWatcher(backbone, watchedList);
+        });
+        backbone.forEach(l -> {
+            watchedList.computeIfAbsent(l, k -> new ArrayList<>())
+                    .forEach(w -> {
+                        w.setStatus(Watcher.Status.SUCCESS);
+                    });
+        });
+        // global Unit propagation
+        globalUnitPropagation(backbone);
+        this.watchedList.clear();
+        return backbone;
+    }
+
+
+    private void globalUnitPropagation(final Set<Literal> backbone) {
+        HashSet<Literal> unitPropagatedLiterals = new HashSet<>(backbone);
+        do {
+            backbone.addAll(unitPropagatedLiterals);
+            HashSet<Literal> temp = new HashSet<>(unitPropagatedLiterals);
+            unitPropagatedLiterals.clear();
+            temp.stream()
+                    .map(Literal::getComplementary)
+                    .forEach(l -> {
+                        this.watchedList.computeIfAbsent(l, k -> new ArrayList<>())
+                                .stream()
+                                .filter(watcher -> watcher.getStatus() != Watcher.Status.SUCCESS)
+                                .forEach(watcher -> {
+                                    // check if there is any unassigned literal
+                                    Integer unAssignedIndex = watcher.hasNextUnAssignedLiteral(backbone, unitPropagatedLiterals);
+                                    if (unAssignedIndex == null) {
+                                        // not found unassigned literal, then the other literal must be unit
+                                        Literal other = watcher.getOtherWatchedLiteral(l);
+                                        unitPropagatedLiterals.add(other);
+                                        this.watchedList.computeIfAbsent(other, k -> new ArrayList<>()).forEach(w -> w.setStatus(Watcher.Status.SUCCESS));
+                                    } else if (unAssignedIndex == -1) {
+                                        watcher.setStatus(Watcher.Status.SUCCESS);
+                                    } else {
+                                        watcher.moveWatchedIndex(l, unAssignedIndex);
+                                        watchedList.computeIfAbsent(watcher.getLiteral(unAssignedIndex), k -> new ArrayList<>()).add(watcher);
+                                    }
+                                });
+                    });
+        } while (!unitPropagatedLiterals.isEmpty());
+    }
+
+
+    public Set<Literal> getUnitLiterals(Model model, Set<Literal> unitPropagatedLitrals) {
+        Implicant implicant = new Implicant(unitPropagatedLitrals);
+        model.getLiterals().stream()
+                .filter(l -> !unitPropagatedLitrals.contains(l))
+                .collect(Collectors.toList())
+                .forEach(l -> {
+                    //remove -l from watched list in all clauses
+                    unwatchAndPropagate(l.getComplementary(), implicant, model);
+                });
+        return implicant.getLiterals();
+    }
+
+    public Set<Literal> getUnitLiterals(Set<Literal> unitPropagatedLitrals) {
+        Implicant implicant = new Implicant(unitPropagatedLitrals);
+        getModel().getLiterals().stream()
+                .filter(l -> !unitPropagatedLitrals.contains(l))
+                .collect(Collectors.toList())
+                .forEach(l -> {
+                    //remove -l from watched list in all clauses
+                    unwatchAndPropagate(l.getComplementary(), implicant, getModel());
+                });
+        implicant.getLiterals().removeAll(unitPropagatedLitrals);
+        return implicant.getLiterals();
+    }
+
+//    public void getBackboneSuperSet(Set<Literal> upLiterals, Set<Literal> unitLiterals) {
+//        this.watchedList.clear();
+//        Implicant backbone = new Implicant();
+//        Model model = getModel();
+//        initWatchesAndSubset(backbone, model);
+//        upLiterals = new HashSet<>(backbone.getLiterals());
+//
+//        model.getLiterals().stream()
+//                .filter(l -> !backbone.contains(l))
+//                .collect(Collectors.toList())
+//                .forEach(l -> {
+//                    //remove -l from watched list in all clauses
+//                    unwatchAndPropagate(l.getComplementary(), backbone, model);
+//                });
+//        Debug.println(false, "After first UWAP", backbone);
+//        unitLiterals = new HashSet<>(backbone.getLiterals());
+//        unitLiterals.removeAll(upLiterals);
+//    }
+
 
     /**
      * Deeply Search current node, if the node has children, recursively search to the leaf,

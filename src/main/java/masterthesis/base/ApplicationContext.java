@@ -1,5 +1,7 @@
 package masterthesis.base;
 
+import masterthesis.utils.LogicNGTool;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,9 +14,16 @@ public class ApplicationContext {
     private Map<Integer, Literal> negLiterals;
     private ArrayList<ArrayList<Integer>> cnfContent;
 
+
+    private ClauseSet clauseSet;
+    // variables for logicNG
+    private LogicNGTool logicNGTool;
+
+
     private ApplicationContext() {
         this.negLiterals = new HashMap<>();
         this.variables = new HashMap<>();
+        logicNGTool = new LogicNGTool();
         reset();
     }
 
@@ -73,7 +82,30 @@ public class ApplicationContext {
         return this.cnfContent;
     }
 
+    public ClauseSet getClauseSet() {
+        if (clauseSet == null || clauseSet.isEmpty()) {
+            clauseSet = new ClauseSet();
+            getCNFContent().stream().forEach(line -> {
+                final Clause clause = new Clause();
+                line.stream().forEach(l -> {
+                    clause.addLiteral(getLiteral(l));
+                });
+                clauseSet.addClause(clause);
+            });
+        }
+        return clauseSet;
+    }
+
     public int getVariablesCount(){
         return this.variables.size();
     }
+
+    public void setClauseSet(ClauseSet clauseSet) {
+        this.clauseSet = new ClauseSet(clauseSet);
+    }
+
+
+//    public void addClause(Clause clase){
+//        this.clauseSet.addClause(clase);
+//    }
 }

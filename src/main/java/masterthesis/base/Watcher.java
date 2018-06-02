@@ -1,7 +1,9 @@
 package masterthesis.base;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Watcher {
     private Clause clause;
@@ -41,6 +43,21 @@ public class Watcher {
         }
     }
 
+    public void initGlobalWatcher(final HashSet<Literal> backbone, final Map<Literal, ArrayList<Watcher>> watchedList) {
+        if (clause.isEmpyt()) return;
+        if (clause.size() > 1) {
+            watchedIndex1 = 0;
+            watchedIndex2 = 1;
+            watchedList.computeIfAbsent(clause.get(0), k -> new ArrayList<>()).add(this);
+            watchedList.computeIfAbsent(clause.get(1), k -> new ArrayList<>()).add(this);
+        } else {
+            watchedIndex1 = 0;
+            backbone.add(clause.get(0));
+            this.status = Status.SUCCESS;
+        }
+
+    }
+
     public int selectWatchedindex(Implicant implicant, int index) {
         int result = -1;
         for (int from = index; from < this.clause.size(); from++) {
@@ -63,20 +80,67 @@ public class Watcher {
         return rotatable;
     }
 
+    /**
+     * @param backbone               A subset of backbone
+     * @param unitPropagatedLiterals The unit propagated literals
+     * @return -1: found unit literal. null: not found unassigned literals. otherwise: found unassigned literal
+     */
+    public Integer hasNextUnAssignedLiteral(final Set<Literal> backbone, final Set<Literal> unitPropagatedLiterals) {
+        Integer index = null;
+        for (int from = watchedIndex1 > watchedIndex2 ? watchedIndex1 + 1 : watchedIndex2 + 1; from < this.clause.size(); from++) {
+            Literal current = this.clause.get(from);
+
+            if (backbone.contains(current) || unitPropagatedLiterals.contains(current)) {
+                index = -1;
+                break;
+            } else if (backbone.contains(current.getComplementary()) || unitPropagatedLiterals.contains(current.getComplementary())) {
+
+            } else {
+                index = from;
+                break;
+            }
+        }
+        return index;
+    }
+
     public Literal getOtherWatchedLiteral(Literal l) {
         int otherIndex = this.clause.getLiterals().indexOf(l) == watchedIndex1 ? watchedIndex2 : watchedIndex1;
         return this.clause.get(otherIndex);
     }
 
-    // set the watched index of l to be index of rotatable literal index.
-    public void moveWatchedIndex(Literal l, Literal rotatable) {
-        int rIndex = this.clause.getLiterals().indexOf(rotatable);
+    /**
+     * move the watched index from literal l to literal next
+     *
+     * @param l    the literal that currently being watched.
+     * @param next The literal that will be watched
+     */
+    public void moveWatchedIndex(Literal l, Literal next) {
+        int rIndex = this.clause.getLiterals().indexOf(next);
         int lIndex = this.clause.getLiterals().indexOf(l);
         if (lIndex == watchedIndex1) {
             watchedIndex1 = rIndex;
         } else {
             watchedIndex2 = rIndex;
         }
+    }
+
+    /**
+     * The watcher gives up to watch literal l again, and watches the new literal in position index.
+     *
+     * @param l         the literal that currently being watched.
+     * @param nextIndex The literal that will be watched
+     */
+    public void moveWatchedIndex(Literal l, int nextIndex) {
+        int lIndex = this.clause.getLiterals().indexOf(l);
+        if (lIndex == watchedIndex1) {
+            watchedIndex1 = nextIndex;
+        } else {
+            watchedIndex2 = nextIndex;
+        }
+    }
+
+    public Literal getLiteral(int index) {
+        return this.clause.get(index);
     }
 
     @Override

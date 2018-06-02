@@ -10,11 +10,12 @@ import org.logicng.solvers.SATSolver;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Main {
 
     public static final String path = "src/main/resources/sat/";
-    public static final String fileNameTest = path + "formula07.cnf";
+    public static final String fileNameTest = path + "formula09.cnf";
     public static final String filename = path + "D1119_M23.cnf";
     //public static final String fileName = path +"dp02s02.shuffled.cnf";
 
@@ -25,8 +26,26 @@ public class Main {
         //testGenModelsFrom4J();
         //testPISat4j();
 
-        testProblem();
+//        testProblem();
         //testAssignmentSat();
+//        testRetainAll();
+        testBackbonePotential();
+    }
+
+    private static void testBackbonePotential() {
+        Set<masterthesis.base.Literal> backbone = Problem.backbonePrimeInter(fileNameTest);
+        backbone.forEach(literal -> System.out.print(literal + ", "));
+        System.out.println();
+    }
+
+    private static void testRetainAll() {
+        Set<Implicant> allPi = Problem.primeImplicantCover(fileNameTest);
+        ArrayList<Implicant> all = new ArrayList<>(allPi);
+        Implicant backbone = all.get(0);
+        for (Implicant pi : all) {
+            backbone.getLiterals().retainAll(pi.getLiterals());
+        }
+        System.out.println(backbone.toPrettyString());
     }
 
 
